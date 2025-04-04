@@ -25,3 +25,15 @@ Nice-to-haves:
 2. Search for specific episodes
 3. Search for new podcasts (Podcast Index API?)
 4. Light / dark theme
+5. Desktop app and sync
+
+## Learning
+
+Because every project should teach you something.
+
+1. Creating an Expo project
+2. Working with RSS Feeds and podcasts.
+   Handling partial feeds and RSS feeds which do and don't support Last-Modified headers.
+3. Working with Whisper + Gemini Flash for transcription and SponsorBlock.
+4. Basic text editing on mobile.
+5. Audio player on mobile.
