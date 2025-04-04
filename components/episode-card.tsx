@@ -45,14 +45,17 @@ export function EpisodeCard({ episode }: { episode: Episode }) {
           {episode.title}
         </Text>
 
-        <Text
-          fontSize='$4'
-          color='gray'
-          numberOfLines={2}
-          textOverflow='ellipsis'
+
+        {episode.description && (
+          <Text
+            fontSize='$4'
+            color='gray'
+            numberOfLines={2}
+            textOverflow='ellipsis'
         >
-          {stripHtml(episode.description)}
-        </Text>
+            {stripHtml(episode.description)}
+          </Text>
+        )}
       </YStack>
     </Card>
   );
