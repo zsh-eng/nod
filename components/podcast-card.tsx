@@ -1,41 +1,51 @@
 import { Podcast } from '@/db/schema';
 import { format } from 'date-fns';
 import { Image } from 'react-native';
-import { Card, H3, Paragraph, XStack, YStack } from 'tamagui';
+import { Card, Text, XStack, YStack } from 'tamagui';
 
 const formatDate = (date: Date) => {
   return format(date, 'd MMM yyyy');
 };
 
 export function PodcastCard({ podcast }: { podcast: Podcast }) {
-  if (!podcast.imageUrl) {
+  if (!podcast.imageUrl && !podcast.itunesImage) {
     return null;
   }
 
+  const imageUrl = podcast.imageUrl || podcast.itunesImage;
+
   return (
-    <Card size='$4'>
-      <XStack gap='$3'>
+    <Card>
+      <XStack gap='$3' alignItems='flex-start'>
         <Image
-          source={{ uri: podcast.imageUrl }}
-          style={{ width: 100, height: 100, borderRadius: 4 }}
+          source={{ uri: imageUrl! }}
+          style={{ width: 88, height: 88, borderRadius: 4 }}
           resizeMode='cover'
         />
-        <YStack gap='$0' justifyContent='flex-start'>
-          <H3
+
+        {/* Can't figure out the centering of this for some reason */}
+        <YStack
+          gap='$0'
+          justifyContent='flex-start'
+          flex={1}
+          height='100%'
+        >
+          <Text
+            marginTop={'$2'}
             numberOfLines={1}
             textOverflow='ellipsis'
-            fontSize={'$5'}
-            marginTop={'$0'}
+            fontSize={'$7'}
             fontWeight={'700'}
           >
             {podcast.title}
-          </H3>
-          <Paragraph theme='alt2' size='$2'>
+          </Text>
+
+          <Text theme='alt2' fontSize={'$2'}>
             {podcast.itunesAuthor}
-          </Paragraph>
-          <Paragraph theme='alt2' size='$1'>
+          </Text>
+          <Text theme='alt2' fontSize={'$2'}>
             Updated {formatDate(new Date(podcast.nodDateUpdated))}
-          </Paragraph>
+          </Text>
         </YStack>
       </XStack>
     </Card>

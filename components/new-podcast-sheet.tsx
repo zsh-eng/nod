@@ -73,9 +73,11 @@ function InputIcon({
 export function NewPodcastSheet({
   open,
   onOpenChange,
+  onAddPodcast,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddPodcast: (podcast: PodcastFeed) => void;
 }) {
   const [url, setUrl] = useState('');
   const [podcast, setPodcast] = useState<PodcastFeed | null>(null);
@@ -119,6 +121,7 @@ export function NewPodcastSheet({
     Keyboard.dismiss();
     setButtonState('loading');
     const parsedPodcast = await parsePodcastFeed(url);
+    console.log('parsedPodcast', parsedPodcast?.podcast);
     setPodcast(parsedPodcast);
     setButtonState('to-delete');
   }
@@ -163,7 +166,10 @@ export function NewPodcastSheet({
         </XStack>
 
         {podcast && podcast?.podcast && (
-          <NewPodcastCard podcast={podcast} onAdd={() => {}} />
+          <NewPodcastCard
+            podcast={podcast}
+            onAdd={() => onAddPodcast(podcast)}
+          />
         )}
       </Sheet.Frame>
     </Sheet>
