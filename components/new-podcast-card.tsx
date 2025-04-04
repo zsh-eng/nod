@@ -4,9 +4,14 @@ import type { PodcastFeed } from '../lib/parser';
 interface NewPodcastCardProps {
   podcast: PodcastFeed;
   onAdd: () => void;
+  podcastExists: boolean;
 }
 
-export function NewPodcastCard({ podcast, onAdd }: NewPodcastCardProps) {
+export function NewPodcastCard({
+  podcast,
+  onAdd,
+  podcastExists,
+}: NewPodcastCardProps) {
   const imageUrl = podcast.podcast.image?.url || podcast.podcast.itunesImage;
 
   return (
@@ -31,14 +36,15 @@ export function NewPodcastCard({ podcast, onAdd }: NewPodcastCardProps) {
 
       <Button
         onPress={onAdd}
-        // backgroundColor='rgba(211, 211, 211, 0.2)'
-        color='black'
+        color={podcastExists ? 'gray' : 'black'}
+        backgroundColor={podcastExists ? 'transparent' : undefined}
         size='$5'
         width={'85%'}
         height={64}
-        marginTop='$2'
+        marginTop={podcastExists ? '$0' : '$2'}
+        disabled={podcastExists}
       >
-        Add Podcast
+        {podcastExists ? 'Podcast already exists' : 'Add Podcast'}
       </Button>
     </YStack>
   );

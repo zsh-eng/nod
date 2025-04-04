@@ -1,4 +1,5 @@
 import { NewPodcastCard } from '@/components/new-podcast-card';
+import { Podcast } from '@/db/schema';
 import { parsePodcastFeed, PodcastFeed } from '@/lib/parser';
 import { LoaderCircle, SendHorizontal, X } from '@tamagui/lucide-icons';
 import { useEffect, useRef, useState } from 'react';
@@ -74,13 +75,19 @@ export function NewPodcastSheet({
   open,
   onOpenChange,
   onAddPodcast,
+  existingPodcasts = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddPodcast: (podcast: PodcastFeed) => void;
+  existingPodcasts?: Podcast[];
 }) {
   const [url, setUrl] = useState('');
   const [podcast, setPodcast] = useState<PodcastFeed | null>(null);
+  const podcastExists = existingPodcasts.some(
+    (p) => p.feedUrl === url
+  );
+
   const inputRef = useRef<TextInput>(null);
 
   const [buttonState, setButtonState] = useState<
@@ -169,6 +176,7 @@ export function NewPodcastSheet({
           <NewPodcastCard
             podcast={podcast}
             onAdd={() => onAddPodcast(podcast)}
+            podcastExists={podcastExists}
           />
         )}
       </Sheet.Frame>
