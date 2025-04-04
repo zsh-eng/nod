@@ -1,4 +1,5 @@
 import { Episode } from '@/db/schema';
+import { stripHtml } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, Text, XStack, YStack } from 'tamagui';
 
@@ -50,7 +51,7 @@ export function EpisodeCard({ episode }: { episode: Episode }) {
           numberOfLines={2}
           textOverflow='ellipsis'
         >
-          {episode.description}
+          {stripHtml(episode.description)}
         </Text>
       </YStack>
     </Card>

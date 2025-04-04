@@ -1,13 +1,23 @@
 import { EpisodeCard } from '@/components/episode-card';
 import db from '@/db';
 import { podcastsTable } from '@/db/schema';
+import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, View } from 'react-native';
-import { Button, H2, Paragraph, Stack, Text, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  H2,
+  Paragraph,
+  Separator,
+  Stack,
+  Text,
+  XStack,
+  YStack,
+} from 'tamagui';
 
 export default function PodcastPage() {
   const router = useRouter();
@@ -48,8 +58,8 @@ export default function PodcastPage() {
 
   const getHeader = () => {
     return (
-      <View>
-        <XStack marginBottom='$4'>
+      <YStack gap='$4'>
+        <XStack>
           <Button
             backgroundColor='transparent'
             onPress={() => router.back()}
@@ -86,7 +96,7 @@ export default function PodcastPage() {
           )}
           {podcast.description && (
             <Paragraph color='gray' fontSize='$5'>
-              {podcast.description}
+              {stripHtml(podcast.description)}
             </Paragraph>
           )}
 
@@ -99,7 +109,7 @@ export default function PodcastPage() {
             Episodes
           </Text>
         </YStack>
-      </View>
+      </YStack>
     );
   };
 
@@ -117,7 +127,13 @@ export default function PodcastPage() {
           data={podcastWithEpisodes.episodes}
           renderItem={({ item }) => <EpisodeCard episode={item} />}
           keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
+          ItemSeparatorComponent={() => (
+            <Separator
+              borderColor='rgba(0, 0, 0, 0.1)'
+              borderWidth={0.5}
+              marginVertical='$4'
+            />
+          )}
           ListHeaderComponent={getHeader}
         />
       </YStack>
