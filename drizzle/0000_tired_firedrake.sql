@@ -1,0 +1,51 @@
+CREATE TABLE `episodes` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`podcast_id` integer,
+	`author` text,
+	`content_encoded` text,
+	`description` text,
+	`enclosure_url` text,
+	`enclosure_type` text,
+	`guid` text NOT NULL,
+	`itunes_author` text,
+	`itunes_duration` real,
+	`itunes_episode` integer,
+	`itunes_episode_type` text,
+	`itunes_explicit` integer,
+	`itunes_image` text,
+	`itunes_season` integer,
+	`itunes_subtitle` text,
+	`itunes_summary` text,
+	`itunes_title` text,
+	`link` text,
+	`pub_date` text,
+	`title` text NOT NULL,
+	FOREIGN KEY (`podcast_id`) REFERENCES `podcasts`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `podcasts` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`copyright` text,
+	`content_encoded` text,
+	`description` text,
+	`feed_url` text NOT NULL,
+	`image_link` text,
+	`image_title` text,
+	`image_url` text,
+	`itunes_author` text,
+	`itunes_category` text,
+	`itunes_explicit` integer,
+	`itunes_image` text,
+	`itunes_owner_name` text,
+	`itunes_owner_email` text,
+	`itunes_subtitle` text,
+	`itunes_summary` text,
+	`itunes_type` text,
+	`language` text,
+	`link` text,
+	`title` text NOT NULL,
+	`nod_date_added` integer NOT NULL,
+	`nod_date_updated` integer NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `podcasts_feed_url_unique` ON `podcasts` (`feed_url`);
