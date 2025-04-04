@@ -1,41 +1,29 @@
+import { EpisodeCard } from '@/components/episode-card';
 import db from '@/db';
-import { episodesTable, podcastsTable } from '@/db/schema';
+import { podcastsTable } from '@/db/schema';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import {
-    Button,
-    H2,
-    Paragraph,
-    ScrollView,
-    Stack,
-    Text,
-    XStack,
-    YStack,
-} from 'tamagui';
+import { FlatList, View } from 'react-native';
+import { Button, H2, Paragraph, Stack, Text, XStack, YStack } from 'tamagui';
 
 export default function PodcastPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const podcastId = parseInt(id, 10);
 
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-
   const { data: podcastWithEpisodes } = useLiveQuery(
-    db
-      .select({
-        podcast: podcastsTable,
-        episodes: episodesTable,
-      })
-      .from(podcastsTable)
-      .leftJoin(episodesTable, eq(episodesTable.podcastId, podcastsTable.id))
-      .where(eq(podcastsTable.id, podcastId))
+    db.query.podcastsTable.findFirst({
+      with: {
+        episodes: true,
+      },
+      where: eq(podcastsTable.id, podcastId),
+    })
   );
 
-  if (!podcastWithEpisodes?.[0]?.podcast) {
+  if (!podcastWithEpisodes) {
     return (
       <YStack
         flex={1}
@@ -56,20 +44,19 @@ export default function PodcastPage() {
     );
   }
 
-  const podcast = podcastWithEpisodes[0].podcast;
+  const podcast = podcastWithEpisodes;
 
-  return (
-    <ScrollView>
-      <YStack gap='$4' paddingHorizontal='$4' paddingVertical='$4'>
-        <XStack>
+  const getHeader = () => {
+    return (
+      <View>
+        <XStack marginBottom='$4'>
           <Button
             backgroundColor='transparent'
             onPress={() => router.back()}
             theme='active'
             width='$4'
-            marginRight='$-2'
           >
-            <ArrowLeft size={24} color='gray' />
+            <ArrowLeft size={32} color='gray' />
           </Button>
         </XStack>
 
@@ -98,18 +85,42 @@ export default function PodcastPage() {
             </Text>
           )}
           {podcast.description && (
-            <Paragraph
-              numberOfLines={isDescriptionExpanded ? undefined : 3}
-              onPress={() => setIsDescriptionExpanded((prev) => !prev)}
-              textOverflow='ellipsis'
-              color='gray'
-              fontSize='$5'
-            >
+            <Paragraph color='gray' fontSize='$5'>
               {podcast.description}
             </Paragraph>
           )}
+
+          <Text
+            fontSize='$7'
+            fontWeight='bold'
+            marginTop='$4'
+            marginBottom='$2'
+          >
+            Episodes
+          </Text>
         </YStack>
+      </View>
+    );
+  };
+
+  // See this link https://stackoverflow.com/questions/58243680/react-native-another-virtualizedlist-backed-container
+  // for managing the scroll area when we have a flat list
+  return (
+    <View>
+      <YStack
+        gap='$4'
+        paddingHorizontal='$4'
+        paddingBottom='$4'
+        paddingTop='$4'
+      >
+        <FlatList
+          data={podcastWithEpisodes.episodes}
+          renderItem={({ item }) => <EpisodeCard episode={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
+          ListHeaderComponent={getHeader}
+        />
       </YStack>
-    </ScrollView>
+    </View>
   );
 }

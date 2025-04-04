@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const podcastsTable = sqliteTable('podcasts', {
@@ -59,3 +60,14 @@ export const episodesTable = sqliteTable('episodes', {
 
 export type Episode = typeof episodesTable.$inferSelect;
 export type NewEpisode = typeof episodesTable.$inferInsert;
+
+export const podcastEpisodeRelations = relations(podcastsTable, ({ many }) => ({
+  episodes: many(episodesTable),
+}));
+
+export const episodePodcastRelations = relations(episodesTable, ({ one }) => ({
+  podcast: one(podcastsTable, {
+    fields: [episodesTable.podcastId],
+    references: [podcastsTable.id],
+  }),
+}));
