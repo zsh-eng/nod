@@ -1,6 +1,9 @@
+import { NewPodcastCard } from '@/components/new-podcast-card';
+import { parsePodcastFeed, PodcastFeed } from '@/lib/parser';
+import { Send } from '@tamagui/lucide-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, TextInput } from 'react-native';
-import { Input, Sheet } from 'tamagui';
+import { Input, Sheet, XStack } from 'tamagui';
 
 export function NewPodcastSheet({
   open,
@@ -10,6 +13,7 @@ export function NewPodcastSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const [url, setUrl] = useState('');
+  const [podcast, setPodcast] = useState<PodcastFeed | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -19,6 +23,16 @@ export function NewPodcastSheet({
       Keyboard.dismiss();
     }
   }, [open]);
+
+  function onUrlChange(url: string) {
+    setUrl(url);
+    setPodcast(null);
+  }
+
+  async function handleSubmit() {
+    const podcast = await parsePodcastFeed(url);
+    setPodcast(podcast);
+  }
 
   return (
     <Sheet
@@ -36,15 +50,30 @@ export function NewPodcastSheet({
       />
       <Sheet.Handle />
       <Sheet.Frame paddingVertical='$2' paddingHorizontal='$2'>
-        <Input
-          ref={inputRef}
-          value={url}
-          onChangeText={setUrl}
-          placeholder='Enter RSS feed URL...'
-          borderWidth={0}
-          backgroundColor='transparent'
-          fontSize='$5'
-        />
+        <XStack space='$2' alignItems='center'>
+          <Input
+            ref={inputRef}
+            value={url}
+            onChangeText={onUrlChange}
+            placeholder='Enter RSS feed URL...'
+            borderWidth={0}
+            backgroundColor='transparent'
+            fontSize='$5'
+            flex={1}
+          />
+
+          <Send
+            size={24}
+            color='lightblue'
+            borderColor='lightblue'
+            marginRight={'$2'}
+            onPress={handleSubmit}
+          />
+        </XStack>
+
+        {podcast && podcast?.podcast && (
+          <NewPodcastCard podcast={podcast} onAdd={() => {}} />
+        )}
       </Sheet.Frame>
     </Sheet>
   );
