@@ -8,7 +8,7 @@ interface NewPodcastCardProps {
 
 export function NewPodcastCard({ podcast, onAdd }: NewPodcastCardProps) {
   return (
-    <YStack gap='$3' alignItems='center' paddingVertical='$6'>
+    <YStack gap='$3' alignItems='center' paddingBottom='$4' paddingTop='$2'>
       <YStack gap='$1' alignItems='center'>
         <Text fontSize='$3' color='gray' textAlign='center'>
           {podcast.podcast.itunesAuthor}
@@ -34,7 +34,7 @@ export function NewPodcastCard({ podcast, onAdd }: NewPodcastCardProps) {
         size='$5'
         width={'85%'}
         height={64}
-        marginTop='$4'
+        marginTop='$2'
       >
         Add Podcast
       </Button>
