@@ -158,6 +158,7 @@ export function NewPodcastSheet({
             ref={inputRef}
             value={url}
             onChangeText={onUrlChange}
+            onSubmitEditing={handleSubmit}
             placeholder='Enter RSS feed URL...'
             borderWidth={0}
             backgroundColor='transparent'

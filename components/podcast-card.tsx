@@ -1,5 +1,6 @@
 import { Podcast } from '@/db/schema';
 import { format } from 'date-fns';
+import { useRouter } from 'expo-router';
 import { Image } from 'react-native';
 import { Card, Text, XStack, YStack } from 'tamagui';
 
@@ -8,14 +9,20 @@ const formatDate = (date: Date) => {
 };
 
 export function PodcastCard({ podcast }: { podcast: Podcast }) {
+  const router = useRouter();
+
   if (!podcast.imageUrl && !podcast.itunesImage) {
     return null;
   }
 
   const imageUrl = podcast.imageUrl || podcast.itunesImage;
 
+  const navigateToPodcast = () => {
+    router.push(`/podcast/${podcast.id}`);
+  };
+
   return (
-    <Card>
+    <Card onPress={navigateToPodcast}>
       <XStack gap='$3' alignItems='flex-start'>
         <Image
           source={{ uri: imageUrl! }}
@@ -24,12 +31,7 @@ export function PodcastCard({ podcast }: { podcast: Podcast }) {
         />
 
         {/* Can't figure out the centering of this for some reason */}
-        <YStack
-          gap='$0'
-          justifyContent='flex-start'
-          flex={1}
-          height='100%'
-        >
+        <YStack gap='$0' justifyContent='flex-start' flex={1} height='100%'>
           <Text
             marginTop={'$2'}
             numberOfLines={1}

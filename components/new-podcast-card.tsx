@@ -37,7 +37,7 @@ export function NewPodcastCard({
       <Button
         onPress={onAdd}
         color={podcastExists ? 'gray' : 'black'}
-        backgroundColor={podcastExists ? 'transparent' : undefined}
+        backgroundColor={podcastExists ? 'transparent' : 'rgba(211, 211, 211, 0.2)'}
         size='$5'
         width={'85%'}
         height={64}
