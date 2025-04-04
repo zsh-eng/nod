@@ -1,5 +1,5 @@
-import { FlatList, StyleSheet } from 'react-native';
 import { Podcast } from '../db/schema';
+import { ScrollView, YStack } from 'tamagui';
 import { PodcastCard } from './podcast-card';
 
 interface PodcastListProps {
@@ -8,18 +8,12 @@ interface PodcastListProps {
 
 export function PodcastList({ podcasts }: PodcastListProps) {
   return (
-    <FlatList
-      data={podcasts}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => <PodcastCard podcast={item} />}
-      contentContainerStyle={styles.container}
-    />
+    <ScrollView>
+      <YStack gap='$4'>
+        {podcasts.map((podcast) => (
+          <PodcastCard key={podcast.id} podcast={podcast} />
+        ))}
+      </YStack>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 8,
-    width: '100%',
-  },
-});

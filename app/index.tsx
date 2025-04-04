@@ -1,6 +1,8 @@
+import { NewPodcastSheet } from '@/components/new-podcast-sheet';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Button, Text, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
+import { Button, H2, Paragraph, ScrollView, YStack } from 'tamagui';
 import { PodcastList } from '../components/podcast-list';
 import db from '../db';
 import { podcastsTable } from '../db/schema';
@@ -29,8 +31,13 @@ export default function Index() {
     })();
   }, [success]);
 
+  const [podcastSheetOpen, setPodcastSheetOpen] = useState(false);
+
   if (migrationError) {
-    return <Text>Migration error: {migrationError.message}</Text>;
+    console.log('migrationError', {
+      migrationError,
+    });
+    return <Paragraph>Migration error: {migrationError.message}</Paragraph>;
   }
 
   async function refreshPodcasts() {
@@ -69,30 +76,36 @@ export default function Index() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'stretch',
-        padding: 16,
-        width: '100%',
-      }}
-    >
-      <Button title='Save Podcast' onPress={savePodcast} disabled={loading} />
-      <Button title='Refresh Podcasts' onPress={refreshPodcasts} />
+    <ScrollView>
+      <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
+        <H2 fontWeight={'bold'}>Podcasts</H2>
 
-      {loading && <ActivityIndicator style={{ marginTop: 20 }} />}
+        <YStack gap='$3'>
+          <Button onPress={savePodcast} disabled={loading} size='$5'>
+            Save Podcast
+          </Button>
+          <Button onPress={refreshPodcasts} size='$5'>
+            Refresh Podcasts
+          </Button>
+          <Button onPress={() => setPodcastSheetOpen(true)} size='$5'>
+            Add Podcast
+          </Button>
+        </YStack>
 
-      {error && (
-        <Text style={{ color: 'red', marginTop: 20 }}>Error: {error}</Text>
-      )}
+        {loading && <ActivityIndicator />}
 
-      {saveStatus && (
-        <Text style={{ marginTop: 20, fontSize: 16 }}>{saveStatus}</Text>
-      )}
+        {error && <Paragraph color='$red10'>Error: {error}</Paragraph>}
 
-      {podcasts && <Text>Podcasts: {podcasts.length}</Text>}
-      {podcasts && <PodcastList podcasts={podcasts} />}
-    </View>
+        {saveStatus && <Paragraph>{saveStatus}</Paragraph>}
+
+        {podcasts && <Paragraph>Podcasts: {podcasts.length}</Paragraph>}
+
+        {podcasts && <PodcastList podcasts={podcasts} />}
+      </YStack>
+      <NewPodcastSheet
+        open={podcastSheetOpen}
+        onOpenChange={setPodcastSheetOpen}
+      />
+    </ScrollView>
   );
 }
