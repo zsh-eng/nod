@@ -37,3 +37,11 @@ Because every project should teach you something.
 3. Working with Whisper + Gemini Flash for transcription and SponsorBlock.
 4. Basic text editing on mobile.
 5. Audio player on mobile.
+
+## Development Loop
+
+For generating migrations: 
+
+```bash
+npx drizzle-kit generate
+```

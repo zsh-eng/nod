@@ -61,6 +61,20 @@ export const episodesTable = sqliteTable('episodes', {
 export type Episode = typeof episodesTable.$inferSelect;
 export type NewEpisode = typeof episodesTable.$inferInsert;
 
+export const episodeDownloadsTable = sqliteTable('episode_downloads', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  episodeId: integer('episode_id').notNull().references(() => episodesTable.id).unique(),
+  status: text('status', { enum: ['not_started', 'in_progress', 'paused', 'completed'] }).notNull(),
+  currentBytes: integer('current_bytes').notNull(),
+  totalBytes: integer('total_bytes').notNull(),
+  fileUri: text('file_uri').notNull(),
+  lastActivityAt: integer('last_activity_at', { mode: 'timestamp' }).notNull(),
+  downloadHandle: text('download_handle').notNull(), // Will store JSON string
+});
+
+export type EpisodeDownload = typeof episodeDownloadsTable.$inferSelect;
+export type NewEpisodeDownload = typeof episodeDownloadsTable.$inferInsert;
+
 export const podcastEpisodeRelations = relations(podcastsTable, ({ many }) => ({
   episodes: many(episodesTable),
 }));
@@ -71,3 +85,11 @@ export const episodePodcastRelations = relations(episodesTable, ({ one }) => ({
     references: [podcastsTable.id],
   }),
 }));
+
+export const episodeDownloadRelations = relations(episodeDownloadsTable, ({ one }) => ({
+  episode: one(episodesTable, {
+    fields: [episodeDownloadsTable.episodeId],
+    references: [episodesTable.id],
+  }),
+}));
+
