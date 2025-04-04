@@ -1,50 +1,27 @@
-# Welcome to your Expo app 👋
+# Nod
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Motivation
 
-## Get started
+Fix many of the annoyances of listening to podcasts on Spotify.
 
-1. Install dependencies
+1. Extremely laggy to load podcasts / episodes
+2. Changing from Wi-Fi to mobile data always causes the podcast to disconnect and continue to randomly pause even after switching full to mobile data
 
-   ```bash
-   npm install
-   ```
+Add useful features for my podcast note-taking experience.
 
-2. Start the app
+1. SponsorBlock - skip sponsor segments
+2. Transcript - view the transcript of the episode
+3. Notes - quickly take notes / highlight segments of the transcript which are automatically associated with the episode
 
-   ```bash
-    npx expo start
-   ```
+Features to replicate from Spotify Podcasts:
 
-In the output, you'll find options to open the app in a
+1. Have an "inbox" of new episodes
+2. Download episodes to listen offline
+3. Set speed for podcast playback
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Nice-to-haves:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. Stream episodes as they come in
+2. Search for specific episodes
+3. Search for new podcasts (Podcast Index API?)
+4. Light / dark theme
