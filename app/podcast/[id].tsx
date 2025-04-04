@@ -7,16 +7,16 @@ import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { FlatList, View } from 'react-native';
+import { FlatList } from 'react-native';
 import {
-  Button,
-  H2,
-  Paragraph,
-  Separator,
-  Stack,
-  Text,
-  XStack,
-  YStack,
+    Button,
+    H2,
+    Paragraph,
+    Separator,
+    Stack,
+    Text,
+    XStack,
+    YStack,
 } from 'tamagui';
 
 export default function PodcastPage() {
@@ -24,7 +24,7 @@ export default function PodcastPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const podcastId = parseInt(id, 10);
 
-  const { data: podcastWithEpisodes } = useLiveQuery(
+  const { data: podcastWithEpisodes, error } = useLiveQuery(
     db.query.podcastsTable.findFirst({
       with: {
         episodes: true,
@@ -34,6 +34,10 @@ export default function PodcastPage() {
   );
 
   if (!podcastWithEpisodes) {
+    return null;
+  }
+
+  if (error) {
     return (
       <YStack
         flex={1}
@@ -116,27 +120,21 @@ export default function PodcastPage() {
   // See this link https://stackoverflow.com/questions/58243680/react-native-another-virtualizedlist-backed-container
   // for managing the scroll area when we have a flat list
   return (
-    <View>
-      <YStack
-        gap='$4'
-        paddingHorizontal='$4'
-        paddingBottom='$4'
-        paddingTop='$4'
-      >
-        <FlatList
-          data={podcastWithEpisodes.episodes}
-          renderItem={({ item }) => <EpisodeCard episode={item} />}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => (
-            <Separator
-              borderColor='rgba(0, 0, 0, 0.1)'
-              borderWidth={0.5}
-              marginVertical='$4'
-            />
-          )}
-          ListHeaderComponent={getHeader}
-        />
-      </YStack>
-    </View>
+    <YStack gap='$4' paddingBottom='$4' paddingTop='$4'>
+      <FlatList
+        style={{ paddingHorizontal: 16 }}
+        data={podcastWithEpisodes.episodes}
+        renderItem={({ item }) => <EpisodeCard episode={item} />}
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={() => (
+          <Separator
+            borderColor='rgba(0, 0, 0, 0.1)'
+            borderWidth={0.5}
+            marginVertical='$4'
+          />
+        )}
+        ListHeaderComponent={getHeader}
+      />
+    </YStack>
   );
 }
