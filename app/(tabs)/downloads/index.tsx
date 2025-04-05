@@ -1,9 +1,22 @@
 import { EpisodeDownloadCard } from '@/components/episode-download-card';
 import { useDownloads } from '@/contexts/download-context';
+import db from '@/db';
+import { episodeDownloadsTable } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { H2, ScrollView, Text, YStack } from 'tamagui';
 
 export default function DownloadsPage() {
   const { activeDownloads } = useDownloads();
+  const { data: completedDownloads, error: completedDownloadsError } =
+    useLiveQuery(
+      db.query.episodeDownloadsTable.findMany({
+        where: eq(episodeDownloadsTable.status, 'completed'),
+        with: {
+          episode: true,
+        },
+      })
+    );
 
   return (
     <ScrollView>
@@ -21,6 +34,37 @@ export default function DownloadsPage() {
         {Object.keys(activeDownloads).length === 0 && (
           <Text color='gray'>No active downloads</Text>
         )}
+
+        <Text
+          fontWeight='bold'
+          fontSize='$5'
+          textTransform='uppercase'
+          color='gray'
+        >
+          Completed Downloads
+        </Text>
+        {completedDownloadsError && (
+          <Text color='red'>
+            Error loading completed downloads: {completedDownloadsError.message}
+          </Text>
+        )}
+
+        {completedDownloads?.map((download) => (
+          <EpisodeDownloadCard
+            key={download.id}
+            episodeId={download.episodeId}
+            download={{
+              episode: download.episode,
+              download: {
+                id: download.id,
+                episodeId: download.episodeId,
+                fileUri: download.fileUri,
+                status: 'completed',
+                totalBytes: download.totalBytes,
+              },
+            }}
+          />
+        ))}
       </YStack>
     </ScrollView>
   );

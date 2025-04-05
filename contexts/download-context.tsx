@@ -1,29 +1,32 @@
 import {
   constructDownloadFilename,
+  createDownloadState,
   DownloadActionResponse,
   EPISODE_HAS_NO_DOWNLOAD_URL_ERROR,
+  updateDownloadState,
 } from '@/service/episode/download';
-import * as FileSystem from 'expo-file-system';
 import {
-  type DownloadProgressData,
-  type DownloadResumable,
-} from 'expo-file-system';
+  AppEpisodeDownload,
+  CompletedDownload,
+  InProgressDownload,
+  isInProgressDownload,
+  PausedDownload,
+} from '@/types/episode';
+import * as FileSystem from 'expo-file-system';
+import { type DownloadProgressData, DownloadResumable } from 'expo-file-system';
 import React, {
   createContext,
   useCallback,
   useContext,
-  useState
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { Episode } from '../db/schema';
 
-type DownloadStatus = 'not_started' | 'in_progress' | 'paused' | 'completed';
-
 export interface DownloadState {
   episode: Episode;
-  status: DownloadStatus;
-  progress: number;
-  totalBytes: number;
-  currentBytes: number;
+  download: AppEpisodeDownload;
   resumable?: DownloadResumable;
 }
 
@@ -36,13 +39,6 @@ interface DownloadContextType {
 
 const DownloadContext = createContext<DownloadContextType | null>(null);
 
-const NEW_DOWNLOAD: Omit<DownloadState, 'episode'> = {
-  status: 'in_progress',
-  progress: 0,
-  totalBytes: 0,
-  currentBytes: 0,
-};
-
 const EPISODE_DOWNLOADS_DIR =
   FileSystem.documentDirectory + 'episode-downloads/';
 
@@ -50,6 +46,11 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
   const [activeDownloads, setActiveDownloads] = useState<
     Record<number, DownloadState>
   >({});
+  const activeDownloadsRef = useRef(activeDownloads);
+
+  useEffect(() => {
+    activeDownloadsRef.current = activeDownloads;
+  }, [activeDownloads]);
 
   /**
    * Builds a callback function that updates the download state for a given episode.
@@ -63,45 +64,69 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
    * AND that it doesn't make another call after `pause` is called (this might trigger race condition
    * of -> pause -> progress update)
    */
-  const buildDownloadCallback = (episodeId: number) => {
+  const buildDownloadCallback = useCallback((episodeId: number) => {
     return (progress: DownloadProgressData) => {
+      if (!activeDownloadsRef.current) {
+        console.log('No active downloads, skipping progress update');
+        return;
+      }
+
       console.log('Received progress for episode:', episodeId, progress);
+      const downloadState = activeDownloadsRef.current[episodeId];
+      if (!downloadState) {
+        console.log('No download state found for episode:', episodeId);
+        return;
+      }
+
+      if (!isInProgressDownload(downloadState.download)) {
+        console.log('Download is not in progress, skipping progress update');
+        return;
+      }
+
+      if (!downloadState.resumable) {
+        console.log(
+          'Download does not have a resumable, skipping progress update'
+        );
+        return;
+      }
+
+      const isCompleted =
+        progress.totalBytesWritten === progress.totalBytesExpectedToWrite;
+
+      const nextDownloadState = isCompleted
+        ? ({
+            ...downloadState.download,
+            status: 'completed',
+            totalBytes: progress.totalBytesExpectedToWrite,
+          } as CompletedDownload)
+        : ({
+            ...downloadState.download,
+            currentBytes: progress.totalBytesWritten,
+            totalBytes: progress.totalBytesExpectedToWrite,
+          } as InProgressDownload);
+
+      if (isCompleted) {
+        console.log('Download completed for episode:', episodeId);
+      } else {
+        console.log(
+          'Updating progress for episode:',
+          episodeId,
+          `(${progress.totalBytesWritten} / ${progress.totalBytesExpectedToWrite})`
+        );
+      }
+
       setActiveDownloads((prev) => {
-        if (!prev[episodeId]) {
-          return prev;
-        }
-
-        const isCompleted =
-          progress.totalBytesWritten === progress.totalBytesExpectedToWrite;
-
-        if (isCompleted) {
-          return {
-            ...prev,
-            [episodeId]: {
-              ...prev[episodeId],
-              status: 'completed',
-              totalBytes: progress.totalBytesExpectedToWrite,
-              currentBytes: progress.totalBytesWritten,
-              resumable: undefined,
-            },
-          };
-        }
-
-        const next = {
-          ...prev[episodeId],
-          progress:
-            progress.totalBytesWritten / progress.totalBytesExpectedToWrite,
-          totalBytes: progress.totalBytesExpectedToWrite,
-          currentBytes: progress.totalBytesWritten,
-        };
-
         return {
           ...prev,
-          [episodeId]: next,
+          [episodeId]: {
+            ...prev[episodeId],
+            download: nextDownloadState,
+          },
         };
       });
+      updateDownloadState(nextDownloadState);
     };
-  };
+  }, []);
 
   const startDownload = useCallback(
     async (episode: Episode): Promise<DownloadActionResponse> => {
@@ -146,14 +171,45 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
           callback
         );
 
+        console.log('Creating download state for episode:', episode.id);
+        const createDownloadStateResult = await createDownloadState(
+          episode,
+          localUri
+        );
+        if (!createDownloadStateResult.success) {
+          console.error('Failed to create download state', {
+            episodeId: episode.id,
+            error: createDownloadStateResult.error,
+          });
+
+          return createDownloadStateResult;
+        }
+
+        // TODO: handle multiple downloads properly
+        // we might want to queue not started first, then eventualy
+        // start the download later using some kind of rate limiter logic
+        const inProgressDownload: InProgressDownload = {
+          ...createDownloadStateResult.downloadState,
+          status: 'in_progress',
+          downloadHandle: downloadResumable,
+          currentBytes: 0,
+          totalBytes: 0,
+        };
+
+        console.log(
+          'Updating download state to in_progress for episode:',
+          episode.id
+        );
+        updateDownloadState(inProgressDownload);
+
         console.log('Starting download for episode:', episode.id);
         // Optimistically start the download
         setActiveDownloads((prev) => {
           return {
             ...prev,
             [episode.id]: {
-              ...NEW_DOWNLOAD,
               episode,
+              download: inProgressDownload,
               resumable: downloadResumable,
             },
           };
@@ -183,75 +239,85 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  const pauseDownload = useCallback(
-    async (episodeId: number) => {
-      console.log('Pausing download for episode:', episodeId);
+  const pauseDownload = useCallback(async (episodeId: number) => {
+    if (!activeDownloadsRef.current) {
+      console.log('No active downloads, skipping pause');
+      return;
+    }
 
-      try {
-        const download = activeDownloads[episodeId];
-        const isInProgress = download?.status === 'in_progress';
-        if (!isInProgress) {
-          console.log('Download is not in progress, skipping pause');
-          return;
-        }
-
-        if (!download?.resumable) {
-          console.log('Download does not have a resumable, skipping pause');
-          return;
-        }
-
-        await download.resumable.pauseAsync();
-        console.log('Paused download for episode:', episodeId);
-        setActiveDownloads((prev) => {
-          return {
-            ...prev,
-            [episodeId]: {
-              ...prev[episodeId],
-              status: 'paused',
-            },
-          };
-        });
-      } catch (error) {
-        console.error('Error pausing download:', error);
+    console.log('Pausing download for episode:', episodeId);
+    try {
+      const download = activeDownloadsRef.current[episodeId];
+      if (!download || !isInProgressDownload(download.download)) {
+        console.log('Download is not in progress, skipping pause');
+        return;
       }
-    },
-    [activeDownloads]
-  );
 
-  const cancelDownload = useCallback(
-    async (episodeId: number) => {
-      console.log('Canceling download for episode:', episodeId);
-
-      try {
-        const download = activeDownloads[episodeId];
-        if (!download) {
-          console.log('Download does not exist, skipping cancel');
-          return;
-        }
-
-        // Assuming that we can cancel either when it's paused or in progress
-        if (!download?.resumable) {
-          console.log('Download does not have a resumable, skipping cancel');
-          return;
-        }
-
-        // Try to cancel the download if possible
-        try {
-          await download.resumable.cancelAsync();
-        } catch (e) {
-          console.log('Error canceling download, removing anyway:', e);
-        }
-
-        setActiveDownloads((prev) => {
-          const { [episodeId]: _, ...rest } = prev;
-          return rest;
-        });
-      } catch (error) {
-        console.error('Error canceling download:', error);
+      if (!download.resumable) {
+        console.log('Download does not have a resumable, skipping pause');
+        return;
       }
-    },
-    [activeDownloads]
-  );
+
+      await download.resumable.pauseAsync();
+      const pausedDownload: PausedDownload = {
+        id: download.download.id,
+        episodeId: download.download.episodeId,
+        fileUri: download.download.fileUri,
+        status: 'paused',
+        downloadHandle: download.resumable,
+        currentBytes: download.download.currentBytes,
+        totalBytes: download.download.totalBytes,
+      };
+
+      console.log('Paused download for episode:', episodeId);
+      setActiveDownloads((prev) => {
+        const { [episodeId]: _, ...rest } = prev;
+        return rest;
+      });
+      updateDownloadState(pausedDownload);
+    } catch (error) {
+      console.error('Error pausing download:', error);
+    }
+  }, []);
+
+  const cancelDownload = useCallback(async (episodeId: number) => {
+    if (!activeDownloadsRef.current) {
+      console.log('No active downloads, skipping cancel');
+      return;
+    }
+    console.log('Canceling download for episode:', episodeId);
+
+    try {
+      const download = activeDownloadsRef.current[episodeId];
+      if (!download) {
+        console.log('Download does not exist, skipping cancel');
+        return;
+      }
+
+      // Assuming that we can cancel either when it's paused or in progress
+      if (!download.resumable) {
+        console.log('Download does not have a resumable, skipping cancel');
+        return;
+      }
+
+      // Try to cancel the download if possible
+      try {
+        await Promise.all([
+          download.resumable.cancelAsync(),
+          cancelDownload(episodeId),
+        ]);
+      } catch (e) {
+        console.log('Error canceling download, removing anyway:', e);
+      }
+
+      setActiveDownloads((prev) => {
+        const { [episodeId]: _, ...rest } = prev;
+        return rest;
+      });
+    } catch (error) {
+      console.error('Error canceling download:', error);
+    }
+  }, []);
 
   return (
     <DownloadContext.Provider

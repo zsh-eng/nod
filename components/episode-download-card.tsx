@@ -1,6 +1,21 @@
 import { DownloadState } from '@/contexts/download-context';
+import { isInProgressDownload } from '@/types/episode';
 import { Progress, Text, XStack, YStack } from 'tamagui';
 
+function formatStatusText(status: string) {
+  switch (status) {
+    case 'completed':
+      return 'completed';
+    case 'in_progress':
+      return 'downloading';
+    case 'not_started':
+      return 'not started';
+    case 'paused':
+      return 'paused';
+    default:
+      return status;
+  }
+}
 export function EpisodeDownloadCard({
   episodeId,
   download,
@@ -20,20 +35,37 @@ export function EpisodeDownloadCard({
           >
             {download.episode.title}
           </Text>
-          <Text fontSize='$2' color='gray'>
-            {Math.round(download.currentBytes / 1024 / 1024)}MB /{' '}
-            {Math.round(download.totalBytes / 1024 / 1024)}MB
-          </Text>
+          {isInProgressDownload(download.download) && (
+            <Text fontSize='$2' color='gray'>
+              {Math.round(download.download.currentBytes / 1024 / 1024)}MB /{' '}
+              {Math.round(download.download.totalBytes / 1024 / 1024)}MB
+            </Text>
+          )}
         </YStack>
       </XStack>
 
-      <Progress
-        value={Math.round(download.progress * 100)}
+      {isInProgressDownload(download.download) && (
+        <Progress
+          value={Math.round(
+            (download.download.currentBytes / download.download.totalBytes) *
+              100
+          )}
+          marginTop='$2'
+          size={`$2`}
+        >
+          <Progress.Indicator animation='100ms' backgroundColor='cyan' />
+        </Progress>
+      )}
+
+      <Text
+        fontSize='$2'
+        color='gray'
+        alignSelf='flex-end'
         marginTop='$2'
-        size={`$2`}
+        textTransform='uppercase'
       >
-        <Progress.Indicator animation='100ms' backgroundColor='cyan' />
-      </Progress>
+        {formatStatusText(download.download.status)}
+      </Text>
     </YStack>
   );
 }

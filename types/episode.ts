@@ -3,7 +3,7 @@ import { DownloadResumable } from 'expo-file-system';
 type BaseDownload = {
   id: number;
   episodeId: number;
-  lastActivityAt: Date;
+  fileUri: string;
 };
 
 export type NotStartedDownload = BaseDownload & {
@@ -26,10 +26,13 @@ export type PausedDownload = BaseDownload & {
 
 export type CompletedDownload = BaseDownload & {
   status: 'completed';
-  fileUri: string;
   totalBytes: number;
 };
 
+/**
+ * Represents the app layer's download state.
+ * Ensures that we have a discriminating union of the possible download states.
+ */
 export type AppEpisodeDownload =
   | NotStartedDownload
   | InProgressDownload

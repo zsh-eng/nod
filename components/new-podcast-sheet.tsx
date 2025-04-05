@@ -84,9 +84,7 @@ export function NewPodcastSheet({
 }) {
   const [url, setUrl] = useState('');
   const [podcast, setPodcast] = useState<PodcastFeed | null>(null);
-  const podcastExists = existingPodcasts.some(
-    (p) => p.feedUrl === url
-  );
+  const podcastExists = existingPodcasts.some((p) => p.feedUrl === url);
 
   const inputRef = useRef<TextInput>(null);
 
@@ -140,10 +138,11 @@ export function NewPodcastSheet({
       dismissOnSnapToBottom
       snapPointsMode='fit'
       modal={true}
+      animation='medium'
     >
       <Sheet.Overlay
         backgroundColor='$shadow6'
-        animation='lazy'
+        animation='quickest'
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
@@ -151,7 +150,6 @@ export function NewPodcastSheet({
         paddingVertical='$2'
         paddingHorizontal='$0'
         borderRadius={0}
-        animation='medium'
       >
         <XStack gap='$2' alignItems='center' paddingRight={'$3'}>
           <Input

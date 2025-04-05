@@ -55,7 +55,11 @@ export default function Index() {
 
   return (
     <ScrollView>
-      <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
+      <YStack
+        gap='$4'
+        padding='$4'
+        paddingVertical={'$6'}
+      >
         <H2 fontWeight={'bold'}>Podcasts</H2>
 
         <Button onPress={() => setPodcastSheetOpen(true)} size='$5'>
