@@ -1,11 +1,11 @@
 import { EpisodeCard } from '@/components/episode-card';
 import { useDownloads } from '@/contexts/download-context';
 import db from '@/db';
-import { Episode, podcastsTable } from '@/db/schema';
+import { Episode, episodesTable, podcastsTable } from '@/db/schema';
+import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
 import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { eq } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList } from 'react-native';
@@ -27,14 +27,20 @@ export default function PodcastPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const podcastId = parseInt(id, 10);
 
-  const { data: podcastWithEpisodes, error } = useLiveQuery(
+  const {
+    data: podcast,
+    loading: podcastLoading,
+    error: podcastError,
+  } = useSQLiteQuery(() =>
     db.query.podcastsTable.findFirst({
-      with: {
-        episodes: {
-          limit: 100,
-        },
-      },
       where: eq(podcastsTable.id, podcastId),
+    })
+  );
+
+  const { data: episodes, loading: episodesLoading } = useSQLiteQuery(() =>
+    db.query.episodesTable.findMany({
+      where: eq(episodesTable.podcastId, podcastId),
+      limit: 100,
     })
   );
 
@@ -44,11 +50,7 @@ export default function PodcastPage() {
     startDownload(episode);
   };
 
-  if (!podcastWithEpisodes) {
-    return null;
-  }
-
-  if (error) {
+  if (podcastError) {
     return (
       <YStack
         flex={1}
@@ -69,7 +71,9 @@ export default function PodcastPage() {
     );
   }
 
-  const podcast = podcastWithEpisodes;
+  if (!podcast) {
+    return null;
+  }
 
   const getHeader = () => {
     return (
@@ -117,8 +121,6 @@ export default function PodcastPage() {
     );
   };
 
-  // See this link https://stackoverflow.com/questions/58243680/react-native-another-virtualizedlist-backed-container
-  // for managing the scroll area when we have a flat list
   return (
     <YStack gap='$2' paddingBottom='$10'>
       <XStack marginLeft='$2' marginTop='$2'>
@@ -135,7 +137,7 @@ export default function PodcastPage() {
 
       <FlatList
         style={{ paddingHorizontal: 16 }}
-        data={podcastWithEpisodes.episodes}
+        data={episodes || []}
         renderItem={({ item }) => (
           <EpisodeCard
             episode={item}
@@ -151,9 +153,7 @@ export default function PodcastPage() {
           />
         )}
         ListHeaderComponent={getHeader}
-        ListFooterComponent={() => (
-          <View height={32} />
-        )}
+        ListFooterComponent={() => <View height={32} />}
       />
     </YStack>
   );
