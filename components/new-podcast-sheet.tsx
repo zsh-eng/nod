@@ -76,11 +76,13 @@ export function NewPodcastSheet({
   onOpenChange,
   onAddPodcast,
   existingPodcasts = [],
+  loading,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddPodcast: (podcast: PodcastFeed) => void;
   existingPodcasts?: Podcast[];
+  loading: boolean;
 }) {
   const [url, setUrl] = useState('');
   const [podcast, setPodcast] = useState<PodcastFeed | null>(null);
@@ -172,6 +174,7 @@ export function NewPodcastSheet({
             podcast={podcast}
             onAdd={() => onAddPodcast(podcast)}
             podcastExists={podcastExists}
+            loading={loading}
           />
         )}
       </Sheet.Frame>

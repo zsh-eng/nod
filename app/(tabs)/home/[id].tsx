@@ -9,7 +9,6 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   Button,
@@ -18,6 +17,7 @@ import {
   Separator,
   Stack,
   Text,
+  View,
   XStack,
   YStack,
 } from 'tamagui';
@@ -120,40 +120,41 @@ export default function PodcastPage() {
   // See this link https://stackoverflow.com/questions/58243680/react-native-another-virtualizedlist-backed-container
   // for managing the scroll area when we have a flat list
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <YStack gap='$2' paddingBottom='$4'>
-        <XStack marginLeft='$2' marginTop='$2'>
-          <Button
-            backgroundColor='transparent'
-            onPress={() => router.back()}
-            theme='active'
-            width='$4'
-            hitSlop={10}
-          >
-            <ArrowLeft size={28} color='gray' />
-          </Button>
-        </XStack>
+    <YStack gap='$2' paddingBottom='$10'>
+      <XStack marginLeft='$2' marginTop='$2'>
+        <Button
+          backgroundColor='transparent'
+          onPress={() => router.back()}
+          theme='active'
+          width='$4'
+          hitSlop={10}
+        >
+          <ArrowLeft size={28} color='gray' />
+        </Button>
+      </XStack>
 
-        <FlatList
-          style={{ paddingHorizontal: 16 }}
-          data={podcastWithEpisodes.episodes}
-          renderItem={({ item }) => (
-            <EpisodeCard
-              episode={item}
-              onPress={() => handleEpisodePress(item)}
-            />
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => (
-            <Separator
-              borderColor='rgba(0, 0, 0, 0.1)'
-              borderWidth={0.5}
-              marginVertical='$4'
-            />
-          )}
-          ListHeaderComponent={getHeader}
-        />
-      </YStack>
-    </SafeAreaView>
+      <FlatList
+        style={{ paddingHorizontal: 16 }}
+        data={podcastWithEpisodes.episodes}
+        renderItem={({ item }) => (
+          <EpisodeCard
+            episode={item}
+            onPress={() => handleEpisodePress(item)}
+          />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={() => (
+          <Separator
+            borderColor='rgba(0, 0, 0, 0.1)'
+            borderWidth={0.5}
+            marginVertical='$4'
+          />
+        )}
+        ListHeaderComponent={getHeader}
+        ListFooterComponent={() => (
+          <View height={32} />
+        )}
+      />
+    </YStack>
   );
 }

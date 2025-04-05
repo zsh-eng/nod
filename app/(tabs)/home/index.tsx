@@ -30,6 +30,7 @@ export default function Index() {
   }
 
   const onAddPodcast = async (podcastFeed: PodcastFeed) => {
+    setLoading(true);
     try {
       // Check if podcast already exists
       const existingPodcasts = await getPodcasts();
@@ -49,17 +50,14 @@ export default function Index() {
       setError(errorMessage);
       console.error('Error saving podcast:', err);
     } finally {
+      setPodcastSheetOpen(false);
       setLoading(false);
     }
   };
 
   return (
     <ScrollView>
-      <YStack
-        gap='$4'
-        padding='$4'
-        paddingVertical={'$6'}
-      >
+      <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
         <H2 fontWeight={'bold'}>Podcasts</H2>
 
         <Button onPress={() => setPodcastSheetOpen(true)} size='$5'>
@@ -82,6 +80,7 @@ export default function Index() {
         onOpenChange={setPodcastSheetOpen}
         onAddPodcast={onAddPodcast}
         existingPodcasts={podcasts}
+        loading={loading}
       />
     </ScrollView>
   );

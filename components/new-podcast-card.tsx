@@ -1,3 +1,4 @@
+import { ActivityIndicator } from 'react-native';
 import { Button, Image, Text, YStack } from 'tamagui';
 import type { PodcastFeed } from '../lib/parser';
 
@@ -5,12 +6,14 @@ interface NewPodcastCardProps {
   podcast: PodcastFeed;
   onAdd: () => void;
   podcastExists: boolean;
+  loading: boolean;
 }
 
 export function NewPodcastCard({
   podcast,
   onAdd,
   podcastExists,
+  loading,
 }: NewPodcastCardProps) {
   const imageUrl = podcast.podcast.image?.url || podcast.podcast.itunesImage;
 
@@ -37,12 +40,15 @@ export function NewPodcastCard({
       <Button
         onPress={onAdd}
         color={podcastExists ? 'gray' : 'black'}
-        backgroundColor={podcastExists ? 'transparent' : 'rgba(211, 211, 211, 0.2)'}
+        backgroundColor={
+          podcastExists ? 'transparent' : 'rgba(211, 211, 211, 0.2)'
+        }
         size='$5'
         width={'85%'}
         height={64}
         marginTop={podcastExists ? '$0' : '$2'}
-        disabled={podcastExists}
+        disabled={podcastExists || loading}
+        icon={loading ? <ActivityIndicator /> : undefined}
       >
         {podcastExists ? 'Podcast already exists' : 'Add Podcast'}
       </Button>
