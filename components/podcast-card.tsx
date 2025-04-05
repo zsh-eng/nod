@@ -18,7 +18,7 @@ export function PodcastCard({ podcast }: { podcast: Podcast }) {
   const imageUrl = podcast.imageUrl || podcast.itunesImage;
 
   const navigateToPodcast = () => {
-    router.push(`/podcast/${podcast.id}`);
+    router.push(`/home/${podcast.id}`);
   };
 
   return (
