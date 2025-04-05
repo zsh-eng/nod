@@ -2,6 +2,7 @@ import { DownloadProvider } from '@/contexts/download-context';
 import { createAnimations } from '@tamagui/animations-react-native';
 import { defaultConfig } from '@tamagui/config/v4'; // for quick config install this
 import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createTamagui, TamaguiProvider } from 'tamagui';
 
 const animations = createAnimations({
@@ -67,12 +68,14 @@ const config = createTamagui(tamaguiConfig);
 
 export default function RootLayout() {
   return (
-    <TamaguiProvider config={config}>
-      <DownloadProvider>
-        <Stack>
+    <SafeAreaProvider>
+      <TamaguiProvider config={config}>
+        <DownloadProvider>
+          <Stack>
           <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-        </Stack>
-      </DownloadProvider>
-    </TamaguiProvider>
+          </Stack>
+        </DownloadProvider>
+      </TamaguiProvider>
+    </SafeAreaProvider>
   );
 }

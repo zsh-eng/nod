@@ -29,7 +29,7 @@ export default function Index() {
     return <Paragraph>Migration error: {migrationError.message}</Paragraph>;
   }
 
-  const savePodcast = async (podcastFeed: PodcastFeed) => {
+  const onAddPodcast = async (podcastFeed: PodcastFeed) => {
     try {
       // Check if podcast already exists
       const existingPodcasts = await getPodcasts();
@@ -80,7 +80,7 @@ export default function Index() {
       <NewPodcastSheet
         open={podcastSheetOpen}
         onOpenChange={setPodcastSheetOpen}
-        onAddPodcast={savePodcast}
+        onAddPodcast={onAddPodcast}
         existingPodcasts={podcasts}
       />
     </ScrollView>
