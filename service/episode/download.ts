@@ -1,14 +1,15 @@
 import db from '@/db';
 import { Episode, episodeDownloadsTable } from '@/db/schema';
 import {
-    AppEpisodeDownload,
-    isCompletedDownload,
-    isInProgressDownload,
-    isNotStartedDownload,
-    isPausedDownload,
-    NotStartedDownload,
+  AppEpisodeDownload,
+  isCompletedDownload,
+  isInProgressDownload,
+  isNotStartedDownload,
+  isPausedDownload,
+  NotStartedDownload,
 } from '@/types/episode';
 import { eq } from 'drizzle-orm';
+import * as FileSystem from 'expo-file-system';
 
 export type DownloadActionResponse =
   | {
@@ -197,6 +198,43 @@ export async function cancelDownload(episodeId: number) {
     .delete(episodeDownloadsTable)
     .where(eq(episodeDownloadsTable.id, download.id));
   console.log('Download cancelled', {
+    episodeId,
+  });
+}
+
+export async function deleteDownload(episodeId: number) {
+  const existingDownload = await db.query.episodeDownloadsTable.findFirst({
+    where: eq(episodeDownloadsTable.episodeId, episodeId),
+  });
+
+  if (!existingDownload) {
+    console.log('Download not found', { episodeId });
+    return;
+  }
+
+  const hasDownloadFile = await FileSystem.getInfoAsync(
+    existingDownload.fileUri
+  );
+
+  if (hasDownloadFile.exists) {
+    console.log('Deleting download file', {
+      episodeId,
+      fileUri: existingDownload.fileUri,
+    });
+    await FileSystem.deleteAsync(existingDownload.fileUri);
+    console.log('Download file deleted', {
+      episodeId,
+      fileUri: existingDownload.fileUri,
+    });
+  }
+
+  console.log('Removing download from database', {
+    episodeId,
+  });
+  await db
+    .delete(episodeDownloadsTable)
+    .where(eq(episodeDownloadsTable.episodeId, episodeId));
+  console.log('Download removed from database', {
     episodeId,
   });
 }

@@ -12,7 +12,7 @@ export default function PodcastPage() {
   const podcastId = parseInt(id, 10);
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false);
 
-  const renderPodcastList = useMemo(() => {
+  const memoizedPodcastList = useMemo(() => {
     return <PodcastEpisodeList podcastId={podcastId} />;
   }, [podcastId]);
 
@@ -40,7 +40,7 @@ export default function PodcastPage() {
         </Button>
       </XStack>
 
-      {renderPodcastList}
+      {memoizedPodcastList}
       <PodcastActions
         podcastId={podcastId}
         actionsSheetOpen={actionsSheetOpen}
