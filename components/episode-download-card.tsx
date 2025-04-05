@@ -24,7 +24,7 @@ export function EpisodeDownloadCard({
   download: DownloadState;
 }) {
   return (
-    <YStack key={episodeId} padding='' borderRadius='$4'>
+    <YStack key={episodeId} paddingHorizontal='$3' paddingVertical='$4' borderWidth={1} borderColor='lightgray'>
       <XStack gap='$3' alignItems='center'>
         <YStack flex={1}>
           <Text
@@ -60,9 +60,10 @@ export function EpisodeDownloadCard({
       <Text
         fontSize='$2'
         color='gray'
-        alignSelf='flex-end'
         marginTop='$2'
         textTransform='uppercase'
+        width='100%'
+        textAlign='right'
       >
         {formatStatusText(download.download.status)}
       </Text>

@@ -4,7 +4,7 @@ import db from '@/db';
 import { episodeDownloadsTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { H2, ScrollView, Text, YStack } from 'tamagui';
+import { H2, ScrollView, Text, View, YStack } from 'tamagui';
 
 export default function DownloadsPage() {
   const { activeDownloads } = useDownloads();
@@ -20,9 +20,10 @@ export default function DownloadsPage() {
 
   return (
     <ScrollView>
-      <YStack gap='$4' padding='$4' paddingVertical='$6'>
+      <View padding='$4' paddingVertical='$6'>
         <H2 fontWeight='bold'>Downloads</H2>
-
+      </View>
+      <YStack gap='$4' padding='$0'>
         {Object.entries(activeDownloads).map(([episodeId, download]) => (
           <EpisodeDownloadCard
             key={episodeId}
@@ -35,14 +36,16 @@ export default function DownloadsPage() {
           <Text color='gray'>No active downloads</Text>
         )}
 
-        <Text
-          fontWeight='bold'
-          fontSize='$5'
-          textTransform='uppercase'
-          color='gray'
-        >
-          Completed Downloads
-        </Text>
+        <View paddingHorizontal='$4'>
+          <Text
+            fontWeight='bold'
+            fontSize='$5'
+            textTransform='uppercase'
+            color='gray'
+          >
+            Completed Downloads
+          </Text>
+        </View>
         {completedDownloadsError && (
           <Text color='red'>
             Error loading completed downloads: {completedDownloadsError.message}

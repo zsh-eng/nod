@@ -115,15 +115,22 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      setActiveDownloads((prev) => {
-        return {
-          ...prev,
-          [episodeId]: {
-            ...prev[episodeId],
-            download: nextDownloadState,
-          },
-        };
-      });
+      if (isCompleted) {
+        setActiveDownloads((prev) => {
+          const { [episodeId]: _, ...rest } = prev;
+          return rest;
+        });
+      } else {
+        setActiveDownloads((prev) => {
+          return {
+            ...prev,
+            [episodeId]: {
+              ...prev[episodeId],
+              download: nextDownloadState,
+            },
+          };
+        });
+      }
       updateDownloadState(nextDownloadState);
     };
   }, []);
