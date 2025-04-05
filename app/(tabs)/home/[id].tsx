@@ -1,6 +1,7 @@
 import { EpisodeCard } from '@/components/episode-card';
+import { useDownloads } from '@/contexts/download-context';
 import db from '@/db';
-import { podcastsTable } from '@/db/schema';
+import { Episode, podcastsTable } from '@/db/schema';
 import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { eq } from 'drizzle-orm';
@@ -9,14 +10,14 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList } from 'react-native';
 import {
-    Button,
-    H2,
-    Paragraph,
-    Separator,
-    Stack,
-    Text,
-    XStack,
-    YStack,
+  Button,
+  H2,
+  Paragraph,
+  Separator,
+  Stack,
+  Text,
+  XStack,
+  YStack,
 } from 'tamagui';
 
 export default function PodcastPage() {
@@ -32,6 +33,12 @@ export default function PodcastPage() {
       where: eq(podcastsTable.id, podcastId),
     })
   );
+  
+  const { startDownload } = useDownloads();
+
+  const handleEpisodePress = (episode: Episode) => {
+    startDownload(episode);
+  };
 
   if (!podcastWithEpisodes) {
     return null;
@@ -124,7 +131,9 @@ export default function PodcastPage() {
       <FlatList
         style={{ paddingHorizontal: 16 }}
         data={podcastWithEpisodes.episodes}
-        renderItem={({ item }) => <EpisodeCard episode={item} />}
+        renderItem={({ item }) => (
+          <EpisodeCard episode={item} onPress={() => handleEpisodePress(item)} />
+        )}
         keyExtractor={(item) => item.id.toString()}
         ItemSeparatorComponent={() => (
           <Separator

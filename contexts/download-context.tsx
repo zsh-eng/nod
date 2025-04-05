@@ -1,5 +1,6 @@
 import {
   constructDownloadFilename,
+  DownloadActionResponse,
   EPISODE_HAS_NO_DOWNLOAD_URL_ERROR,
 } from '@/service/episode/download';
 import * as FileSystem from 'expo-file-system';
@@ -7,12 +8,18 @@ import {
   type DownloadProgressData,
   type DownloadResumable,
 } from 'expo-file-system';
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useState
+} from 'react';
 import { Episode } from '../db/schema';
 
 type DownloadStatus = 'not_started' | 'in_progress' | 'paused' | 'completed';
 
-interface DownloadState {
+export interface DownloadState {
+  episode: Episode;
   status: DownloadStatus;
   progress: number;
   totalBytes: number;
@@ -22,14 +29,14 @@ interface DownloadState {
 
 interface DownloadContextType {
   activeDownloads: Record<number, DownloadState>;
-  startDownload: (episode: Episode) => Promise<void>;
+  startDownload: (episode: Episode) => Promise<DownloadActionResponse>;
   pauseDownload: (episodeId: number) => Promise<void>;
   cancelDownload: (episodeId: number) => Promise<void>;
 }
 
 const DownloadContext = createContext<DownloadContextType | null>(null);
 
-const NEW_DOWNLOAD: DownloadState = {
+const NEW_DOWNLOAD: Omit<DownloadState, 'episode'> = {
   status: 'in_progress',
   progress: 0,
   totalBytes: 0,
@@ -58,6 +65,7 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
    */
   const buildDownloadCallback = (episodeId: number) => {
     return (progress: DownloadProgressData) => {
+      console.log('Received progress for episode:', episodeId, progress);
       setActiveDownloads((prev) => {
         if (!prev[episodeId]) {
           return prev;
@@ -95,38 +103,85 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const startDownload = useCallback(async (episode: Episode) => {
-    if (!episode.enclosureUrl) {
-      console.error(EPISODE_HAS_NO_DOWNLOAD_URL_ERROR);
-      return;
-    }
-
-    try {
-      const callback = buildDownloadCallback(episode.id);
-      const downloadResumable = FileSystem.createDownloadResumable(
-        episode.enclosureUrl,
-        constructDownloadFilename(EPISODE_DOWNLOADS_DIR, episode),
-        {},
-        callback
-      );
-
-      // Optimistically start the download
-      setActiveDownloads((prev) => {
+  const startDownload = useCallback(
+    async (episode: Episode): Promise<DownloadActionResponse> => {
+      if (!episode.enclosureUrl) {
+        console.error(EPISODE_HAS_NO_DOWNLOAD_URL_ERROR);
         return {
-          ...prev,
-          [episode.id]: {
-            ...NEW_DOWNLOAD,
-            resumable: downloadResumable,
-          },
+          success: false,
+          error: EPISODE_HAS_NO_DOWNLOAD_URL_ERROR,
         };
-      });
+      }
 
-      // We don't await this, just let the callback handle the state updates
-      downloadResumable.downloadAsync();
-    } catch (error) {
-      console.error('Error starting download for episode:', episode.id, error);
-    }
-  }, []);
+      try {
+        // Check if URL is valid and accessible
+        console.log('Checking URL before download:', episode.enclosureUrl);
+
+        // Make sure directory exists
+        const dirInfo = await FileSystem.getInfoAsync(EPISODE_DOWNLOADS_DIR);
+        if (!dirInfo.exists) {
+          console.log('Creating directory on demand:', EPISODE_DOWNLOADS_DIR);
+          await FileSystem.makeDirectoryAsync(EPISODE_DOWNLOADS_DIR, {
+            intermediates: true,
+          });
+        }
+
+        // Build filename
+        const localUri = constructDownloadFilename(
+          EPISODE_DOWNLOADS_DIR,
+          episode
+        );
+        console.log('Local download URI will be:', localUri);
+
+        // Create callback function
+        const callback = buildDownloadCallback(episode.id);
+        console.log('Created download callback for episode:', episode.id);
+
+        // Create download resumable
+        console.log('Creating download resumable for:', episode.enclosureUrl);
+        const downloadResumable = FileSystem.createDownloadResumable(
+          episode.enclosureUrl,
+          localUri,
+          {},
+          callback
+        );
+
+        console.log('Starting download for episode:', episode.id);
+        // Optimistically start the download
+        setActiveDownloads((prev) => {
+          return {
+            ...prev,
+            [episode.id]: {
+              ...NEW_DOWNLOAD,
+              episode,
+              resumable: downloadResumable,
+            },
+          };
+        });
+
+        // We don't await this, just let the callback handle the state updates
+        downloadResumable.downloadAsync();
+        console.log('Download started for episode:', episode.id);
+
+        return {
+          success: true,
+        };
+      } catch (error) {
+        console.error(
+          'Error starting download for episode:',
+          episode.id,
+          error
+        );
+
+        return {
+          success: false,
+          error:
+            error instanceof Error ? error.message : 'Error starting download',
+        };
+      }
+    },
+    []
+  );
 
   const pauseDownload = useCallback(
     async (episodeId: number) => {
@@ -146,6 +201,7 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
         }
 
         await download.resumable.pauseAsync();
+        console.log('Paused download for episode:', episodeId);
         setActiveDownloads((prev) => {
           return {
             ...prev,

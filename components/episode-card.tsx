@@ -22,9 +22,15 @@ function formatPubDate(pubDate: string | null) {
   }).toUpperCase();
 }
 
-export function EpisodeCard({ episode }: { episode: Episode }) {
+export function EpisodeCard({
+  episode,
+  onPress,
+}: {
+  episode: Episode;
+  onPress: () => void;
+}) {
   return (
-    <Card>
+    <Card onPress={onPress}>
       <YStack padding='' gap='$2'>
         <XStack justifyContent='space-between'>
           <Text color='gray' fontSize='$2' textTransform='uppercase'>
@@ -45,14 +51,13 @@ export function EpisodeCard({ episode }: { episode: Episode }) {
           {episode.title}
         </Text>
 
-
         {episode.description && (
           <Text
             fontSize='$4'
             color='gray'
             numberOfLines={2}
             textOverflow='ellipsis'
-        >
+          >
             {stripHtml(episode.description)}
           </Text>
         )}
