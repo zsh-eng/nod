@@ -53,7 +53,7 @@ export function EpisodeDownloadCard({
           marginTop='$2'
           size={`$2`}
         >
-          <Progress.Indicator animation='100ms' backgroundColor='cyan' />
+          <Progress.Indicator animation='quick' backgroundColor='cyan' />
         </Progress>
       )}
 
