@@ -22,7 +22,9 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Episode } from '../db/schema';
+import { Episode, episodeDownloadsTable } from '../db/schema';
+import db from '@/db';
+import { eq } from 'drizzle-orm';
 
 export interface DownloadState {
   episode: Episode;
@@ -145,6 +147,7 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
+
       try {
         // Check if URL is valid and accessible
         console.log('Checking URL before download:', episode.enclosureUrl);
@@ -156,6 +159,17 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
           await FileSystem.makeDirectoryAsync(EPISODE_DOWNLOADS_DIR, {
             intermediates: true,
           });
+        }
+
+        // Check if the download already exists
+        const download = await db.query.episodeDownloadsTable.findFirst({
+          where: eq(episodeDownloadsTable.episodeId, episode.id),
+        });
+        if (download) {
+          console.log('Download already exists, skipping');
+          return {
+            success: true,
+          };
         }
 
         // Build filename
