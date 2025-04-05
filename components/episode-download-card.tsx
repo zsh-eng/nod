@@ -107,12 +107,12 @@ export function EpisodeDownloadCard({
           marginTop='$2'
           size={`$2`}
         >
-          <Progress.Indicator animation='quick' backgroundColor='cyan' />
+          <Progress.Indicator animation='quick' backgroundColor='blue' />
         </Progress>
       )}
 
       <XStack justifyContent='space-between' alignItems='center' marginTop='$2'>
-        {download.download.status === 'not_started' && (
+        {download.download.status === 'completed' && (
           <XStack gap='$2'>
             <Button size='$3' onPress={handlePlay} color='gray'>
               <Play size={20} stroke={'black'} color='black' />

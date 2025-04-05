@@ -48,9 +48,10 @@ export function constructDownloadFilename(dir: string, episode: Episode) {
 /**
  * Persists the download state of an episode to the database.
  */
-export function updateDownloadState(download: AppEpisodeDownload) {
+export async function updateDownloadState(download: AppEpisodeDownload) {
   if (isCompletedDownload(download)) {
-    db.update(episodeDownloadsTable)
+    await db
+      .update(episodeDownloadsTable)
       .set({
         status: 'completed',
         fileUri: download.fileUri,
@@ -67,7 +68,8 @@ export function updateDownloadState(download: AppEpisodeDownload) {
   }
 
   if (isInProgressDownload(download)) {
-    db.update(episodeDownloadsTable)
+    await db
+      .update(episodeDownloadsTable)
       .set({
         status: 'in_progress',
         fileUri: download.fileUri,
@@ -84,7 +86,8 @@ export function updateDownloadState(download: AppEpisodeDownload) {
   }
 
   if (isPausedDownload(download)) {
-    db.update(episodeDownloadsTable)
+    await db
+      .update(episodeDownloadsTable)
       .set({
         status: 'paused',
         fileUri: download.fileUri,

@@ -1,6 +1,8 @@
 import { EpisodeDownloadCard } from '@/components/episode-download-card';
 import { useDownloads } from '@/contexts/download-context';
 import db from '@/db';
+import { episodeDownloadsTable } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { H2, ScrollView, Text, View, YStack } from 'tamagui';
 
@@ -9,12 +11,20 @@ export default function DownloadsPage() {
   const { data: completedDownloads, error: completedDownloadsError } =
     useLiveQuery(
       db.query.episodeDownloadsTable.findMany({
-        // where: eq(episodeDownloadsTable.status, 'completed'),
+        where: eq(episodeDownloadsTable.status, 'completed'),
         with: {
           episode: true,
         },
       })
     );
+
+  console.log(
+    'episode and download ids',
+    completedDownloads?.map((download) => ({
+      episodeId: download.episodeId,
+      downloadId: download.id,
+    }))
+  );
 
   return (
     <ScrollView>
