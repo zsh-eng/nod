@@ -138,19 +138,15 @@ export function NewPodcastSheet({
       dismissOnSnapToBottom
       snapPointsMode='fit'
       modal={true}
-      animation='medium'
+      animation={'quicksnap'}
     >
       <Sheet.Overlay
         backgroundColor='$shadow6'
-        animation='quickest'
+        animation='quick'
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Frame
-        paddingVertical='$2'
-        paddingHorizontal='$0'
-        borderRadius={0}
-      >
+      <Sheet.Frame paddingVertical='$2' paddingHorizontal='$0' borderRadius={0}>
         <XStack gap='$2' alignItems='center' paddingRight={'$3'}>
           <Input
             ref={inputRef}
