@@ -31,7 +31,7 @@ export default function DownloadsPage() {
       <View padding='$4' paddingVertical='$6'>
         <H2 fontWeight='bold'>Downloads</H2>
       </View>
-      <YStack gap='$4' padding='$0'>
+      <YStack gap='$2' padding='$0'>
         {Object.entries(activeDownloads).map(([episodeId, download]) => (
           <EpisodeDownloadCard
             key={episodeId}
@@ -40,11 +40,7 @@ export default function DownloadsPage() {
           />
         ))}
 
-        {Object.keys(activeDownloads).length === 0 && (
-          <Text color='gray'>No active downloads</Text>
-        )}
-
-        <View paddingHorizontal='$4'>
+        <View paddingHorizontal='$4' marginBottom='$2'>
           <Text
             fontWeight='bold'
             fontSize='$5'
@@ -54,6 +50,7 @@ export default function DownloadsPage() {
             Completed Downloads
           </Text>
         </View>
+
         {completedDownloadsError && (
           <Text color='red'>
             Error loading completed downloads: {completedDownloadsError.message}

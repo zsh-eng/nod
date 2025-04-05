@@ -63,10 +63,8 @@ export function EpisodeDownloadCard({
   return (
     <YStack
       key={episodeId}
-      paddingHorizontal='$3'
-      paddingVertical='$4'
-      borderWidth={1}
-      borderColor='lightgray'
+      paddingHorizontal='$4'
+      paddingVertical='$2'
     >
       <XStack alignItems='center' gap='$2'>
         <Text fontSize='$3' color='black' fontWeight='bold'>
