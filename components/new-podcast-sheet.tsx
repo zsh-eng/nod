@@ -103,10 +103,10 @@ export function NewPodcastSheet({
   }, [open, podcast]);
 
   function onUrlChange(url: string) {
+    setUrl(url);
     if (url.length === 0) {
       setButtonState('hidden');
     } else {
-      setUrl(url);
       setPodcast(null);
       setButtonState('to-submit');
     }
