@@ -1,6 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
+import * as FileSystem from 'expo-file-system';
 import db from '../db';
-import { episodesTable, podcastsTable } from '../db/schema';
+import {
+  episodeDownloadsTable,
+  episodesTable,
+  podcastsTable,
+} from '../db/schema';
 import { PodcastFeed } from '../lib/parser';
 
 const BATCH_SIZE = 100;
@@ -94,9 +99,69 @@ export async function getPodcast(id: number) {
 }
 
 export async function deletePodcast(id: number) {
+  console.log('deleting podcast', id);
+  const podcastDownloads = await db
+    .select()
+    .from(episodeDownloadsTable)
+    .leftJoin(
+      episodesTable,
+      eq(episodeDownloadsTable.episodeId, episodesTable.id)
+    )
+    .leftJoin(podcastsTable, eq(episodesTable.podcastId, podcastsTable.id))
+    .where(and(eq(episodesTable.podcastId, id), eq(podcastsTable.id, id)));
+
+  if (podcastDownloads.length > 0) {
+    console.log('found', podcastDownloads.length, 'downloads for podcast', id);
+    console.log(
+      'podcastDownloads',
+      podcastDownloads.map((d) => d.episode_downloads.id)
+    );
+
+    for (const download of podcastDownloads) {
+      if (!download.episode_downloads.fileUri) {
+        continue;
+      }
+
+      console.log('deleting download', download.episode_downloads.fileUri);
+      await FileSystem.deleteAsync(download.episode_downloads.fileUri);
+      console.log('deleted download', download.episode_downloads.fileUri);
+    }
+
+    console.log('deleted all downloads for podcast', id);
+  }
+
+  const podcastDownloadIds = podcastDownloads.map(
+    (d) => d.episode_downloads.id
+  );
+
   // Delete episodes first due to foreign key constraint
-  await db.delete(episodesTable).where(eq(episodesTable.podcastId, id));
-  await db.delete(podcastsTable).where(eq(podcastsTable.id, id));
+  await db.transaction(async (tx) => {
+    if (podcastDownloadIds.length > 0) {
+      console.log(
+        'deleting',
+        podcastDownloadIds.length,
+        'downloads for podcast',
+        id
+      );
+      await tx
+        .delete(episodeDownloadsTable)
+        .where(inArray(episodeDownloadsTable.id, podcastDownloadIds));
+      console.log(
+        'deleted',
+        podcastDownloadIds.length,
+        'downloads for podcast',
+        id
+      );
+    }
+
+    console.log('deleting episodes for podcast', id);
+    await tx.delete(episodesTable).where(eq(episodesTable.podcastId, id));
+    console.log('deleted episodes for podcast', id);
+
+    console.log('deleting podcast', id);
+    await tx.delete(podcastsTable).where(eq(podcastsTable.id, id));
+    console.log('deleted podcast', id);
+  });
 }
 
 // Episode CRUD operations

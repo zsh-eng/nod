@@ -1,13 +1,16 @@
 import { EpisodeCard } from '@/components/episode-card';
+import { PodcastActionsSheet } from '@/components/podcast-actions-sheet';
 import { useDownloads } from '@/contexts/download-context';
 import db from '@/db';
 import { Episode, episodesTable, podcastsTable } from '@/db/schema';
 import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
 import { stripHtml } from '@/lib/utils';
-import { ArrowLeft, X } from '@tamagui/lucide-icons';
+import { deletePodcast } from '@/service/podcast';
+import { ArrowLeft, EllipsisVertical, X } from '@tamagui/lucide-icons';
 import { eq } from 'drizzle-orm';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { FlatList } from 'react-native';
 
 import {
@@ -26,6 +29,7 @@ export default function PodcastPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const podcastId = parseInt(id, 10);
+  const [actionsSheetOpen, setActionsSheetOpen] = useState(false);
 
   const {
     data: podcast,
@@ -123,7 +127,7 @@ export default function PodcastPage() {
 
   return (
     <YStack gap='$2' paddingBottom='$10'>
-      <XStack marginLeft='$2' marginTop='$2'>
+      <XStack marginLeft='$2' marginTop='$2' justifyContent='space-between'>
         <Button
           backgroundColor='transparent'
           onPress={() => router.back()}
@@ -132,6 +136,16 @@ export default function PodcastPage() {
           hitSlop={10}
         >
           <ArrowLeft size={28} color='gray' />
+        </Button>
+
+        <Button
+          backgroundColor='transparent'
+          onPress={() => setActionsSheetOpen(true)}
+          theme='active'
+          width='$4'
+          hitSlop={10}
+        >
+          <EllipsisVertical size={28} color='gray' />
         </Button>
       </XStack>
 
@@ -154,6 +168,15 @@ export default function PodcastPage() {
         )}
         ListHeaderComponent={getHeader}
         ListFooterComponent={() => <View height={32} />}
+      />
+
+      <PodcastActionsSheet
+        open={actionsSheetOpen}
+        onOpenChange={setActionsSheetOpen}
+        onDeletePodcast={async () => {
+          await deletePodcast(podcastId);
+          router.back();
+        }}
       />
     </YStack>
   );
