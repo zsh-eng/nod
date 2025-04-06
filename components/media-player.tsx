@@ -27,6 +27,14 @@ const AnimatedIcon = styled(YStack, {
   justifyContent: 'center',
 });
 
+function debounce(func: (...args: any[]) => void, delay: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+}
+
 export const MediaPlayer: React.FC = () => {
   const {
     currentTrack,
@@ -50,9 +58,9 @@ export const MediaPlayer: React.FC = () => {
   };
 
   // Handle seeking to a specific position
-  const handleSeek = (position: number) => {
+  const handleSeek = debounce((position: number) => {
     TrackPlayer.seekTo(position);
-  };
+  }, 200);
 
   return (
     <>
@@ -244,7 +252,6 @@ export const MediaPlayer: React.FC = () => {
               max={progress.duration || 100}
               min={0}
               step={1}
-              value={[progress.position]}
               onValueChange={(value) => {
                 if (value && value[0]) {
                   handleSeek(value[0]);
@@ -285,9 +292,21 @@ export const MediaPlayer: React.FC = () => {
               />
 
               {isPlaying ? (
-                <Pause strokeWidth={2} size={'$4'} color='black' />
+                <Pause
+                  strokeWidth={2}
+                  size={'$4'}
+                  color='black'
+                  hitSlop={15}
+                  onPress={togglePlayback}
+                />
               ) : (
-                <Play strokeWidth={2} size={'$4'} color='black' />
+                <Play
+                  strokeWidth={2}
+                  size={'$4'}
+                  color='black'
+                  hitSlop={15}
+                  onPress={togglePlayback}
+                />
               )}
 
               <SkipForward
