@@ -1,17 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTracks } from '@/contexts/tracks-context';
-import { useProgress } from 'react-native-track-player';
+import { Pause, Play, SkipBack, SkipForward } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { useProgress } from 'react-native-track-player';
+import { Button, H4, Paragraph, Progress, Text, XStack, YStack } from 'tamagui';
 
 export const MediaPlayer: React.FC = () => {
-  const { 
-    currentTrack, 
-    isPlaying, 
+  const {
+    currentTrack,
+    isPlaying,
     togglePlayback,
     skipToNext,
-    skipToPrevious
+    skipToPrevious,
   } = useTracks();
   const progress = useProgress();
 
@@ -26,119 +26,70 @@ export const MediaPlayer: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.progressBar}>
-        <View 
-          style={[
-            styles.progressIndicator, 
-            { 
-              width: `${(progress.position / progress.duration) * 100}%` 
-            }
-          ]} 
-        />
-      </View>
-      
-      <View style={styles.content}>
+    <YStack
+      backgroundColor='$background'
+      borderTopWidth={1}
+      borderTopColor='$borderColor'
+      paddingVertical='$2'
+      paddingHorizontal='$4'
+    >
+      <Progress
+        value={(progress.position / progress.duration) * 100}
+        size='$1'
+        marginBottom='$2'
+      />
+
+      <XStack alignItems='center'>
         {currentTrack.artwork && (
-          <Image source={{ uri: currentTrack.artwork.toString() }} style={styles.artwork} />
+          <Image
+            source={{ uri: currentTrack.artwork.toString() }}
+            style={{ width: 50, height: 50, borderRadius: 4, marginRight: 10 }}
+          />
         )}
-        
-        <View style={styles.trackInfo}>
-          <Text style={styles.title} numberOfLines={1}>
+
+        <YStack flex={1}>
+          <Text fontSize='$2' numberOfLines={1}>
             {currentTrack.title}
           </Text>
-          <Text style={styles.artist} numberOfLines={1}>
+          <Text fontSize='$1' color='gray' numberOfLines={1}>
             {currentTrack.artist}
           </Text>
-        </View>
-        
-        <View style={styles.controls}>
-          <TouchableOpacity onPress={skipToPrevious}>
-            <Ionicons name="play-skip-back" size={24} color="#000" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
-            <Ionicons 
-              name={isPlaying ? "pause" : "play"} 
-              size={28} 
-              color="#000" 
-            />
-          </TouchableOpacity>
-          
-          <TouchableOpacity onPress={skipToNext}>
-            <Ionicons name="play-skip-forward" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-      </View>
-      
-      <View style={styles.timeContainer}>
-        <Text style={styles.time}>{formatTime(progress.position)}</Text>
-        <Text style={styles.time}>{formatTime(progress.duration)}</Text>
-      </View>
-    </View>
+        </YStack>
+
+        <XStack alignItems='center'>
+          <Button
+            icon={SkipBack}
+            size='$3'
+            chromeless
+            onPress={skipToPrevious}
+          />
+
+          <Button
+            icon={isPlaying ? Pause : Play}
+            size='$4'
+            circular
+            backgroundColor='gray'
+            marginHorizontal='$2'
+            onPress={togglePlayback}
+          />
+
+          <Button
+            icon={SkipForward}
+            size='$3'
+            chromeless
+            onPress={skipToNext}
+          />
+        </XStack>
+      </XStack>
+
+      <XStack justifyContent='space-between' marginTop='$2'>
+        <Text fontSize='$1' color='gray'>
+          {formatTime(progress.position)}
+        </Text>
+        <Text fontSize='$1' color='gray'>
+          {formatTime(progress.duration)}
+        </Text>
+      </XStack>
+    </YStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingVertical: 10,
-    paddingHorizontal: 16
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  artwork: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-    marginRight: 12
-  },
-  trackInfo: {
-    flex: 1
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000'
-  },
-  artist: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 2
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  playButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8
-  },
-  progressBar: {
-    height: 2,
-    backgroundColor: '#eee',
-    marginBottom: 10
-  },
-  progressIndicator: {
-    height: '100%',
-    backgroundColor: '#000'
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8
-  },
-  time: {
-    fontSize: 12,
-    color: '#888'
-  }
-}); 

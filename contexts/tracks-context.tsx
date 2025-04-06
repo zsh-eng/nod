@@ -23,6 +23,7 @@ interface TracksContextType {
   togglePlayback: () => Promise<void>;
   skipToNext: () => Promise<void>;
   skipToPrevious: () => Promise<void>;
+  reset: () => Promise<void>;
 }
 
 const TracksContext = createContext<TracksContextType | undefined>(undefined);
@@ -98,6 +99,11 @@ export const TracksProvider: React.FC<{ children: ReactNode }> = ({
     await TrackPlayer.skipToPrevious();
   };
 
+  const reset = async (): Promise<void> => {
+    if (!isPlayerReady) return;
+    await TrackPlayer.reset();
+  };
+
   useEffect(() => {
     setupPlayer();
 
@@ -118,6 +124,7 @@ export const TracksProvider: React.FC<{ children: ReactNode }> = ({
         togglePlayback,
         skipToNext,
         skipToPrevious,
+        reset,
       }}
     >
       {children}

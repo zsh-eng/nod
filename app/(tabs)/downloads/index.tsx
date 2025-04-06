@@ -1,5 +1,6 @@
 import { EpisodeDownloadCard } from '@/components/episode-download-card';
 import { useDownloads } from '@/contexts/download-context';
+import { useTracks } from '@/contexts/tracks-context';
 import db from '@/db';
 import { episodeDownloadsTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -8,6 +9,7 @@ import { H2, ScrollView, Text, View, YStack } from 'tamagui';
 
 export default function DownloadsPage() {
   const { activeDownloads } = useDownloads();
+  const { isPlayerReady, addTracks, playTrack, reset } = useTracks();
   const { data: completedDownloads, error: completedDownloadsError } =
     useLiveQuery(
       db.query.episodeDownloadsTable.findMany({
@@ -61,6 +63,22 @@ export default function DownloadsPage() {
           <EpisodeDownloadCard
             key={download.id}
             episodeId={download.episodeId}
+            onPlay={async () => {
+              if (isPlayerReady) {
+                await reset();
+                await addTracks([
+                  {
+                    id: download.episodeId,
+                    title: download.episode.title,
+                    artist: download.episode.itunesAuthor ?? undefined,
+                    artwork: download.episode.itunesImage ?? undefined,
+                    url: download.fileUri,
+                    duration: download.episode.itunesDuration ?? undefined,
+                  },
+                ]);
+                await playTrack(0);
+              }
+            }}
             download={{
               episode: download.episode,
               download: {

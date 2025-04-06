@@ -3,6 +3,7 @@ import { deleteDownload } from '@/service/episode/download';
 import { isInProgressDownload } from '@/types/episode';
 import { Play, Trash } from '@tamagui/lucide-icons';
 import { Button, Progress, Text, XStack, YStack } from 'tamagui';
+
 function formatStatusText(status: string) {
   switch (status) {
     case 'completed':
@@ -47,12 +48,15 @@ function formatDuration(duration: number | null) {
 export function EpisodeDownloadCard({
   episodeId,
   download,
+  onPlay,
 }: {
   episodeId: number;
   download: DownloadState;
+  onPlay?: (episodeId: number) => void;
 }) {
   const handlePlay = () => {
     console.log('Playing episode:', episodeId);
+    onPlay?.(episodeId);
   };
 
   const handleDelete = () => {
@@ -61,11 +65,7 @@ export function EpisodeDownloadCard({
   };
 
   return (
-    <YStack
-      key={episodeId}
-      paddingHorizontal='$4'
-      paddingVertical='$2'
-    >
+    <YStack key={episodeId} paddingHorizontal='$4' paddingVertical='$2'>
       <XStack alignItems='center' gap='$2'>
         <Text fontSize='$3' color='black' fontWeight='bold'>
           {/* {download.episode.podcast.title} */}
