@@ -2,11 +2,18 @@
 import 'expo-dev-client';
 
 import { DownloadProvider } from '@/contexts/download-context';
+import { TracksProvider } from '@/contexts/tracks-context';
 import { createAnimations } from '@tamagui/animations-react-native';
 import { defaultConfig } from '@tamagui/config/v4'; // for quick config install this
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import TrackPlayer from 'react-native-track-player';
 import { createTamagui, TamaguiProvider } from 'tamagui';
+
+// Register playback service
+TrackPlayer.registerPlaybackService(
+  () => require('@/service/playbackService').default
+);
 
 const animations = createAnimations({
   quicksnap: {
@@ -74,9 +81,11 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <TamaguiProvider config={config}>
         <DownloadProvider>
-          <Stack>
-            <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-          </Stack>
+          <TracksProvider>
+            <Stack>
+              <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+            </Stack>
+          </TracksProvider>
         </DownloadProvider>
       </TamaguiProvider>
     </SafeAreaProvider>

@@ -66,3 +66,5 @@ export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$
 ```
 
 Run the build using `npx expo run:android`.
+
+NOTE: Only tried running the build for Android so far, I believe there are different instructions for the various modules (like Filesystem, Track Player) to setup for iOS.
