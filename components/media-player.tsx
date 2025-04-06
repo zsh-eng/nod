@@ -3,7 +3,7 @@ import { Pause, Play, SkipBack, SkipForward } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { useProgress } from 'react-native-track-player';
-import { Button, Progress, Text, XStack, YStack } from 'tamagui';
+import { Progress, Text, XStack, YStack } from 'tamagui';
 
 export const MediaPlayer: React.FC = () => {
   const {
@@ -32,15 +32,9 @@ export const MediaPlayer: React.FC = () => {
       borderTopWidth={1}
       borderTopColor='$borderColor'
       paddingVertical='$2'
-      paddingHorizontal='$4'
+      paddingHorizontal='$3'
     >
-      <Progress
-        value={(progress.position / progress.duration) * 100}
-        size='$1'
-        marginBottom='$2'
-      />
-
-      <XStack alignItems='center'>
+      <XStack alignItems='center' gap='$1'>
         {currentTrack.artwork && (
           <Image
             source={{ uri: currentTrack.artwork.toString() }}
@@ -49,7 +43,7 @@ export const MediaPlayer: React.FC = () => {
         )}
 
         <YStack flex={1}>
-          <Text fontSize='$2' numberOfLines={1}>
+          <Text fontSize='$2' numberOfLines={1} fontWeight='bold'>
             {currentTrack.title}
           </Text>
           <Text fontSize='$1' color='gray' numberOfLines={1}>
@@ -57,35 +51,58 @@ export const MediaPlayer: React.FC = () => {
           </Text>
         </YStack>
 
-        <XStack alignItems='center'>
-          <Button
-            icon={SkipBack}
-            size='$3'
-            chromeless
+        <XStack alignItems='center' gap='$1' marginLeft='$1'>
+          <SkipBack
+            strokeWidth={1.8}
+            hitSlop={10}
+            marginHorizontal={'$2'}
+            size={18}
             onPress={skipToPrevious}
           />
 
-          <Button
-            icon={isPlaying ? Pause : Play}
-            size='$5'
-            circular
-            marginHorizontal='$2'
-            onPress={togglePlayback}
-          />
+          {isPlaying ? (
+            <Pause
+              strokeWidth={1.8}
+              hitSlop={10}
+              marginHorizontal={'$2'}
+              onPress={togglePlayback}
+            />
+          ) : (
+            <Play
+              strokeWidth={2}
+              hitSlop={10}
+              marginHorizontal={'$2'}
+              onPress={togglePlayback}
+            />
+          )}
 
-          <Button
-            icon={SkipForward}
-            size='$3'
-            chromeless
+          <SkipForward
+            size={18}
+            strokeWidth={1.8}
+            hitSlop={10}
+            marginHorizontal={'$2'}
             onPress={skipToNext}
           />
         </XStack>
       </XStack>
 
-      <XStack justifyContent='space-between' marginTop='$2'>
+      <XStack
+        justifyContent='space-between'
+        alignItems='center'
+        gap='$3'
+        width='100%'
+        marginTop='$2'
+        paddingHorizontal='$1'
+      >
         <Text fontSize='$1' color='gray'>
           {formatTime(progress.position)}
         </Text>
+        <Progress
+          value={Math.round((progress.position / progress.duration) * 100)}
+          size='$1'
+          flex={1}
+          marginBottom={'$1'}
+        />
         <Text fontSize='$1' color='gray'>
           {formatTime(progress.duration)}
         </Text>
