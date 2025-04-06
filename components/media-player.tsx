@@ -3,7 +3,21 @@ import { Pause, Play, SkipBack, SkipForward } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { useProgress } from 'react-native-track-player';
-import { Progress, Text, XStack, YStack } from 'tamagui';
+import {
+  AnimatePresence,
+  Progress,
+  Text,
+  XStack,
+  YStack,
+  styled,
+} from 'tamagui';
+
+const AnimatedIcon = styled(YStack, {
+  width: 24,
+  height: 24,
+  alignItems: 'center',
+  justifyContent: 'center',
+});
 
 export const MediaPlayer: React.FC = () => {
   const {
@@ -60,21 +74,63 @@ export const MediaPlayer: React.FC = () => {
             onPress={skipToPrevious}
           />
 
-          {isPlaying ? (
-            <Pause
-              strokeWidth={1.8}
-              hitSlop={10}
-              marginHorizontal={'$2'}
-              onPress={togglePlayback}
-            />
-          ) : (
-            <Play
-              strokeWidth={2}
-              hitSlop={10}
-              marginHorizontal={'$2'}
-              onPress={togglePlayback}
-            />
-          )}
+          <AnimatePresence>
+            {isPlaying ? (
+              <AnimatedIcon
+                key='pause'
+                animation='quick'
+                enterStyle={{
+                  opacity: 0,
+                  scale: 0.5,
+                }}
+                exitStyle={{
+                  scale: 0.5,
+                  opacity: 0,
+                }}
+                scale={1}
+                opacity={1}
+                pressStyle={{
+                  scale: 0.9,
+                }}
+                onPress={() => {
+                  // Add animation spring effect
+                  togglePlayback();
+                }}
+                // Custom spring animation
+                animateOnly={['transform']}
+                hoverStyle={{ scale: 1.1 }}
+              >
+                <Pause strokeWidth={1.8} hitSlop={10} marginHorizontal={'$2'} />
+              </AnimatedIcon>
+            ) : (
+              <AnimatedIcon
+                key='play'
+                animation='quick'
+                enterStyle={{
+                  scale: 0.5,
+                  opacity: 0,
+                }}
+                exitStyle={{
+                  scale: 0.5,
+                  opacity: 0,
+                }}
+                scale={1}
+                opacity={1}
+                pressStyle={{
+                  scale: 0.9,
+                }}
+                onPress={() => {
+                  // Add animation spring effect
+                  togglePlayback();
+                }}
+                // Custom spring animation
+                animateOnly={['transform']}
+                hoverStyle={{ scale: 1.1 }}
+              >
+                <Play strokeWidth={2} hitSlop={10} marginHorizontal={'$2'} />
+              </AnimatedIcon>
+            )}
+          </AnimatePresence>
 
           <SkipForward
             size={18}
