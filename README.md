@@ -40,8 +40,29 @@ Because every project should teach you something.
 
 ## Development Loop
 
-For generating migrations: 
+For generating migrations:
 
 ```bash
 npx drizzle-kit generate
 ```
+
+Running the dev server on android:
+
+1. Turn on USB debugging on the android device and connect to the laptop
+2. Check if the device is present using `adb devices`
+3. Run `pnpm expo start --tunnel` and include `--clear` if there are issues and you need to clear the cache.
+
+Setting up the development build:
+
+Because we're using `react-media-track-player` which has native code, we need to build the app for the specific platform.
+
+Follow the instructions [here](https://docs.expo.dev/develop/development-builds/create-a-build/).
+
+Note that you have to install Android SDK and update the ENV variables.
+
+```bash
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+```
+
+Run the build using `npx expo run:android`.

@@ -1,3 +1,6 @@
+// For error handling, see: https://docs.expo.dev/develop/development-builds/use-development-builds/#rebuild-a-development-build
+import 'expo-dev-client';
+
 import { DownloadProvider } from '@/contexts/download-context';
 import { createAnimations } from '@tamagui/animations-react-native';
 import { defaultConfig } from '@tamagui/config/v4'; // for quick config install this
@@ -72,7 +75,7 @@ export default function RootLayout() {
       <TamaguiProvider config={config}>
         <DownloadProvider>
           <Stack>
-          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+            <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
           </Stack>
         </DownloadProvider>
       </TamaguiProvider>
