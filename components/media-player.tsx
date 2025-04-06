@@ -3,7 +3,7 @@ import { Pause, Play, SkipBack, SkipForward } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { useProgress } from 'react-native-track-player';
-import { Button, H4, Paragraph, Progress, Text, XStack, YStack } from 'tamagui';
+import { Button, Progress, Text, XStack, YStack } from 'tamagui';
 
 export const MediaPlayer: React.FC = () => {
   const {
@@ -13,6 +13,7 @@ export const MediaPlayer: React.FC = () => {
     skipToNext,
     skipToPrevious,
   } = useTracks();
+
   const progress = useProgress();
 
   if (!currentTrack) {
@@ -66,9 +67,8 @@ export const MediaPlayer: React.FC = () => {
 
           <Button
             icon={isPlaying ? Pause : Play}
-            size='$4'
+            size='$5'
             circular
-            backgroundColor='gray'
             marginHorizontal='$2'
             onPress={togglePlayback}
           />

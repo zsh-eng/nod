@@ -1,16 +1,16 @@
 import React, {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from 'react';
 import TrackPlayer, {
-    Capability,
-    Event,
-    State,
-    Track,
-    useTrackPlayerEvents,
+  Capability,
+  Event,
+  State,
+  Track,
+  useTrackPlayerEvents,
 } from 'react-native-track-player';
 
 interface TracksContextType {
@@ -18,7 +18,7 @@ interface TracksContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
   setupPlayer: () => Promise<void>;
-  addTracks: (tracks: Track[]) => Promise<void>;
+  loadTrack: (track: Track) => Promise<void>;
   playTrack: (index: number) => Promise<void>;
   togglePlayback: () => Promise<void>;
   skipToNext: () => Promise<void>;
@@ -35,17 +35,21 @@ export const TracksProvider: React.FC<{ children: ReactNode }> = ({
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  useTrackPlayerEvents([Event.PlaybackTrackChanged], async (event) => {
-    if (event.type === Event.PlaybackTrackChanged && event.nextTrack !== null) {
-      const track = await TrackPlayer.getTrack(event.nextTrack);
-      setCurrentTrack(track || null);
-    }
-  });
-
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {
-    if (event.type === Event.PlaybackState) {
-      const state = await TrackPlayer.getState();
-      setIsPlaying(state === State.Playing);
+    if (event.type !== Event.PlaybackState) {
+      return;
+    }
+
+    const state = (await TrackPlayer.getPlaybackState()).state;
+    console.log('PlaybackState', state);
+    setIsPlaying(state === State.Playing);
+
+    const track = await TrackPlayer.getActiveTrack();
+    if (track) {
+      console.log('PlaybackState: Setting current track', track);
+      setCurrentTrack(track);
+    } else {
+      console.log('PlaybackState: No track');
     }
   });
 
@@ -64,24 +68,75 @@ export const TracksProvider: React.FC<{ children: ReactNode }> = ({
       });
       setIsPlayerReady(true);
     } catch (error) {
-      console.error('Error setting up the player:', error);
+      const isSetupBefore =
+        error instanceof Error &&
+        error.message.includes('The player has already been initialized');
+
+      if (isSetupBefore) {
+        console.log('Player already setup');
+        setIsPlayerReady(true);
+      } else {
+        console.error('Error setting up the player:', error);
+        setTimeout(setupPlayer, 1000);
+      }
     }
   };
 
-  const addTracks = async (tracks: Track[]): Promise<void> => {
-    if (!isPlayerReady) return;
-    await TrackPlayer.add(tracks);
+  const loadTrack = async (track: Track): Promise<void> => {
+    if (!isPlayerReady) {
+      console.warn('Player not ready, cannot add tracks');
+      return;
+    }
+
+    try {
+      const queue = await TrackPlayer.getQueue();
+      if (queue.length > 0) {
+        await TrackPlayer.reset();
+      }
+
+      await TrackPlayer.load(track);
+      const newQueue = await TrackPlayer.getQueue();
+
+      if (newQueue.length === 0) {
+        throw new Error('Failed to add tracks to queue');
+      }
+    } catch (error) {
+      console.error('Error adding tracks:', error);
+      throw error;
+    }
   };
 
   const playTrack = async (index: number): Promise<void> => {
-    if (!isPlayerReady) return;
-    await TrackPlayer.skip(index);
-    await TrackPlayer.play();
+    if (!isPlayerReady) {
+      console.warn('Player not ready, cannot play track');
+      return;
+    }
+
+    try {
+      const queue = await TrackPlayer.getQueue();
+      if (queue.length <= index) {
+        console.error(
+          `No track exists at index ${index}. Queue length: ${queue.length}`
+        );
+        return;
+      }
+
+      console.log('playTrack', index);
+      console.log('queue', queue);
+      await TrackPlayer.skip(index);
+
+      console.log('attempting to play');
+      await TrackPlayer.play();
+      console.log('played');
+    } catch (error) {
+      console.error('Error playing track:', error);
+      throw error;
+    }
   };
 
   const togglePlayback = async (): Promise<void> => {
     if (!isPlayerReady) return;
-    const state = await TrackPlayer.getState();
+    const state = (await TrackPlayer.getPlaybackState()).state;
     if (state === State.Playing) {
       await TrackPlayer.pause();
     } else {
@@ -119,7 +174,7 @@ export const TracksProvider: React.FC<{ children: ReactNode }> = ({
         currentTrack,
         isPlaying,
         setupPlayer,
-        addTracks,
+        loadTrack,
         playTrack,
         togglePlayback,
         skipToNext,

@@ -5,11 +5,13 @@ import db from '@/db';
 import { episodeDownloadsTable } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { Track } from 'react-native-track-player';
+
 import { H2, ScrollView, Text, View, YStack } from 'tamagui';
 
 export default function DownloadsPage() {
   const { activeDownloads } = useDownloads();
-  const { isPlayerReady, addTracks, playTrack, reset } = useTracks();
+  const { isPlayerReady, playTrack, reset, loadTrack } = useTracks();
   const { data: completedDownloads, error: completedDownloadsError } =
     useLiveQuery(
       db.query.episodeDownloadsTable.findMany({
@@ -19,14 +21,6 @@ export default function DownloadsPage() {
         },
       })
     );
-
-  console.log(
-    'episode and download ids',
-    completedDownloads?.map((download) => ({
-      episodeId: download.episodeId,
-      downloadId: download.id,
-    }))
-  );
 
   return (
     <ScrollView>
@@ -64,19 +58,37 @@ export default function DownloadsPage() {
             key={download.id}
             episodeId={download.episodeId}
             onPlay={async () => {
-              if (isPlayerReady) {
+              if (!isPlayerReady) {
+                console.log('Player not ready');
+                return;
+              }
+
+              try {
+                console.log('resetting player');
                 await reset();
-                await addTracks([
-                  {
-                    id: download.episodeId,
-                    title: download.episode.title,
-                    artist: download.episode.itunesAuthor ?? undefined,
-                    artwork: download.episode.itunesImage ?? undefined,
-                    url: download.fileUri,
-                    duration: download.episode.itunesDuration ?? undefined,
-                  },
-                ]);
+
+                const trackData = {
+                  id: download.episodeId, // Ensure ID is a string
+                  title: download.episode.title || 'Unknown Title',
+                  artist: download.episode.itunesAuthor ?? 'Unknown Artist',
+                  artwork: download.episode.itunesImage ?? undefined,
+                  url: download.fileUri,
+                  duration: download.episode.itunesDuration ?? 0,
+                } satisfies Track;
+
+                console.log(
+                  'Adding downloaded track to media player:',
+                  JSON.stringify(trackData, null, 2)
+                );
+                await loadTrack(trackData);
+
+                console.log(
+                  'Playing downloaded track episodeId:',
+                  download.episodeId
+                );
                 await playTrack(0);
+              } catch (error) {
+                console.error('Error playing track:', error);
               }
             }}
             download={{

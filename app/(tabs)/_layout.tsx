@@ -1,4 +1,4 @@
-import { MediaPlayer } from '@/components/MediaPlayer';
+import { MediaPlayer } from '@/components/media-player';
 import { useTracks } from '@/contexts/tracks-context';
 import { Download, Home } from '@tamagui/lucide-icons';
 import { Tabs } from 'expo-router';
