@@ -2,8 +2,8 @@ import { MediaPlayer } from '@/components/media-player';
 import { useTracks } from '@/contexts/tracks-context';
 import { Download, Home } from '@tamagui/lucide-icons';
 import { Tabs } from 'expo-router';
-import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'tamagui';
 
 export default function TabsLayout() {
   const { currentTrack } = useTracks();

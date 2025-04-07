@@ -143,7 +143,7 @@ export function NewPodcastSheet({
       animation={'quicksnap'}
     >
       <Sheet.Overlay
-        backgroundColor='$shadow6'
+        backgroundColor='rgba(0, 0, 0, 0.3)'
         animation='quick'
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}

@@ -17,7 +17,7 @@ export default function PodcastPage() {
   }, [podcastId]);
 
   return (
-    <YStack gap='$2' paddingBottom='$10'>
+    <YStack gap='$2' paddingBottom='$10' backgroundColor={'$background'}>
       <XStack marginLeft='$2' marginTop='$2' justifyContent='space-between'>
         <Button
           backgroundColor='transparent'

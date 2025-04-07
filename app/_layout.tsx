@@ -4,6 +4,7 @@ import 'expo-dev-client';
 import { DownloadProvider } from '@/contexts/download-context';
 import { TracksProvider } from '@/contexts/tracks-context';
 import { animations } from '@/theme/animation';
+import { allThemes } from '@/theme/themes';
 import { defaultConfig } from '@tamagui/config/v4'; // for quick config install this
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,25 +19,10 @@ TrackPlayer.registerPlaybackService(
 const tamaguiConfig = {
   ...defaultConfig,
   animations: {
-    // weird but swapping the order fixes the type error
     ...animations,
-    ...defaultConfig.animations,
   },
   themes: {
-    ...defaultConfig.themes,
-    light: {
-      ...defaultConfig.themes.light,
-      background: 'white',
-      backgroundStrong: 'white',
-      backgroundHover: '#f5f5f5',
-      // Additional background variants
-      backgroundPress: '#e5e5e5',
-      backgroundFocus: '#f0f0f0',
-
-      // Card backgrounds
-      card: 'white',
-      cardHover: '#f5f5f5',
-    },
+    ...allThemes,
   },
 };
 
@@ -45,7 +31,7 @@ const config = createTamagui(tamaguiConfig);
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <TamaguiProvider config={config}>
+      <TamaguiProvider config={config} defaultTheme='light'>
         <DownloadProvider>
           <TracksProvider>
             <Stack>

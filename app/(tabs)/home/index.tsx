@@ -4,15 +4,12 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
-import { Track } from 'react-native-track-player';
 import {
   Button,
   H2,
   Paragraph,
   ScrollView,
-  Text,
-  XStack,
-  YStack,
+  YStack
 } from 'tamagui';
 import { PodcastList } from '../../../components/podcast-list';
 import db from '../../../db';
@@ -64,7 +61,7 @@ export default function Index() {
   };
 
   return (
-    <ScrollView>
+    <ScrollView backgroundColor='$background'>
       <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
         <H2 fontWeight={'bold'}>Podcasts</H2>
 

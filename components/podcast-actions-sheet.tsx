@@ -48,7 +48,7 @@ export function PodcastActionsSheet({
           <YStack gap='$4'>
             <Button
               onPress={() => setConfirmVisible(true)}
-              icon={<Trash size={18} color='$red10' />}
+              icon={<Trash size={18} color='red' />}
               theme='red'
               size='$5'
               backgroundColor='rgba(255, 0, 0, 0.05)'
@@ -72,7 +72,7 @@ export function PodcastActionsSheet({
             </Text>
             <XStack gap='$3' justifyContent='flex-end' marginTop='$2'>
               <Button onPress={() => setConfirmVisible(false)}>Cancel</Button>
-              <Button theme='red' onPress={handleDeleteConfirm}>
+              <Button onPress={handleDeleteConfirm} color='red'>
                 Delete
               </Button>
             </XStack>

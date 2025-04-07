@@ -11,14 +11,14 @@ import { useRouter } from 'expo-router';
 import { FlatList } from 'react-native';
 
 import {
-    Button,
-    H2,
-    Paragraph,
-    Separator,
-    Stack,
-    Text,
-    View,
-    YStack,
+  Button,
+  H2,
+  Paragraph,
+  Separator,
+  Stack,
+  Text,
+  View,
+  YStack,
 } from 'tamagui';
 
 interface PodcastEpisodeListProps {
@@ -78,7 +78,7 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
 
   const getHeader = () => {
     return (
-      <YStack gap='$4'>
+      <YStack gap='$4' backgroundColor=''>
         {podcast.imageUrl && (
           <Stack
             aspectRatio={1}

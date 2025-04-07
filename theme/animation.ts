@@ -32,4 +32,4 @@ export const animations = createAnimations({
     type: 'timing', // Use timing instead of spring
     duration: 300, // Zero duration means it happens instantly
   },
-});
+}) as any;

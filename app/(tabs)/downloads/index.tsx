@@ -23,7 +23,7 @@ export default function DownloadsPage() {
     );
 
   return (
-    <ScrollView>
+    <ScrollView backgroundColor='$background'>
       <View padding='$4' paddingVertical='$6'>
         <H2 fontWeight='bold'>Downloads</H2>
       </View>
