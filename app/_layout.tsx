@@ -3,58 +3,24 @@ import 'expo-dev-client';
 
 import { DownloadProvider } from '@/contexts/download-context';
 import { TracksProvider } from '@/contexts/tracks-context';
-import { createAnimations } from '@tamagui/animations-react-native';
+import { animations } from '@/theme/animation';
 import { defaultConfig } from '@tamagui/config/v4'; // for quick config install this
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import TrackPlayer from 'react-native-track-player';
 import { createTamagui, TamaguiProvider } from 'tamagui';
-
 // Register playback service
 TrackPlayer.registerPlaybackService(
   () => require('@/service/playbackService').default
 );
 
-const animations = createAnimations({
-  quicksnap: {
-    type: 'spring',
-    damping: 20, // High damping to minimize bounce
-    stiffness: 300, // High stiffness for speed
-    mass: 0.5, // Lower mass to make it more responsive
-  },
-  // Quick response animations
-  quick: {
-    type: 'spring',
-    damping: 20,
-    mass: 1.2,
-    stiffness: 250,
-  },
-
-  // Standard, bouncy animation
-  bouncy: {
-    type: 'spring',
-    damping: 9,
-    mass: 0.9,
-    stiffness: 150,
-  },
-
-  lazy: {
-    type: 'spring',
-    damping: 18,
-    stiffness: 50,
-  },
-  none: {
-    type: 'timing', // Use timing instead of spring
-    duration: 300, // Zero duration means it happens instantly
-  },
-}) as any;
-
 // Create a custom config with modified theme values
 const tamaguiConfig = {
   ...defaultConfig,
   animations: {
-    ...defaultConfig.animations,
+    // weird but swapping the order fixes the type error
     ...animations,
+    ...defaultConfig.animations,
   },
   themes: {
     ...defaultConfig.themes,
