@@ -3,15 +3,17 @@ import db from '@/db';
 import { episodesTable, podcastsTable } from '@/db/schema';
 import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
 import { desc, eq } from 'drizzle-orm';
-import React from 'react';
-import { FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, RefreshControl } from 'react-native';
 import { H2, Paragraph, Separator, View, YStack } from 'tamagui';
 
 export default function Inbox() {
+  const [refreshing, setRefreshing] = useState(false);
   const {
     data: episodes,
     loading: episodeLoading,
     error: episodeError,
+    refetch: refetchEpisodes,
   } = useSQLiteQuery(() =>
     db
       .select()
@@ -37,6 +39,12 @@ export default function Inbox() {
     );
   }
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetchEpisodes();
+    setRefreshing(false);
+  };
+
   return (
     <YStack gap='$2' paddingBottom='$10' backgroundColor={'$background'}>
       <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
@@ -59,6 +67,9 @@ export default function Inbox() {
           />
         )}
         ListFooterComponent={() => <View height={32} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </YStack>
   );
