@@ -63,6 +63,7 @@ export async function createPodcast(feed: PodcastFeed) {
     itunesTitle: episode.itunesTitle,
     link: episode.link,
     pubDate: episode.pubDate,
+    pubDateTimestamp: new Date(episode.pubDate),
     title: episode.title,
   }));
 

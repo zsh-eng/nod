@@ -15,6 +15,13 @@
       "when": 1743804552125,
       "tag": "0001_outgoing_sentinels",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1744342700794,
+      "tag": "0002_closed_black_knight",
+      "breakpoints": true
     }
   ]
 }
