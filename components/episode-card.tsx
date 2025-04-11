@@ -1,5 +1,5 @@
 import { Episode } from '@/db/schema';
-import { stripHtml } from '@/lib/utils';
+import { formatStatusText, stripHtml } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, Text, XStack, YStack } from 'tamagui';
 
@@ -24,22 +24,36 @@ function formatPubDate(pubDate: string | null) {
 
 export function EpisodeCard({
   episode,
+  downloadStatus,
   onPress,
 }: {
   episode: Episode;
+  downloadStatus?: 'not_started' | 'in_progress' | 'paused' | 'completed';
   onPress: () => void;
 }) {
   return (
     <Card onPress={onPress}>
       <YStack padding='' gap='$2'>
-        <XStack justifyContent='space-between'>
+        <XStack justifyContent='flex-start' gap='$2' alignItems='center'>
           <Text color='gray' fontSize='$2' textTransform='uppercase'>
             {formatPubDate(episode.pubDate)}
           </Text>
-
+          <Text fontSize='$2' color={'gray'}>
+            •
+          </Text>
           <Text color='gray' fontSize='$2'>
             {formatDuration(episode.itunesDuration)}
           </Text>
+          {downloadStatus && (
+            <Text
+              fontSize='$2'
+              color={'gray'}
+              marginLeft={'auto'}
+              textTransform='uppercase'
+            >
+              {formatStatusText(downloadStatus)}
+            </Text>
+          )}
         </XStack>
 
         <Text

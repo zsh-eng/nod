@@ -1,5 +1,5 @@
 import { EpisodeCard } from '@/components/episode-card';
-import { Episode, Podcast } from '@/db/schema';
+import { Episode, EpisodeDownload, Podcast } from '@/db/schema';
 import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
@@ -18,7 +18,11 @@ import {
 
 interface PodcastEpisodeListViewProps {
   podcast: Podcast | null;
-  episodes: Episode[] | null;
+  episodes:
+    | (Episode & {
+        episodeDownloads: EpisodeDownload | null;
+      })[]
+    | null;
   podcastError?: unknown;
   onEpisodePress: (episode: Episode) => void;
 }
@@ -107,7 +111,11 @@ export function PodcastEpisodeListView({
       style={{ paddingHorizontal: 16 }}
       data={episodes || []}
       renderItem={({ item }) => (
-        <EpisodeCard episode={item} onPress={() => onEpisodePress(item)} />
+        <EpisodeCard
+          episode={item}
+          onPress={() => onEpisodePress(item)}
+          downloadStatus={item.episodeDownloads?.status}
+        />
       )}
       keyExtractor={(item) => item.id.toString()}
       ItemSeparatorComponent={() => (

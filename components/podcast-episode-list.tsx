@@ -24,6 +24,9 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
     db.query.episodesTable.findMany({
       where: eq(episodesTable.podcastId, podcastId),
       limit: 100,
+      with: {
+        episodeDownloads: true,
+      },
     })
   );
 

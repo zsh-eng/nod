@@ -1,6 +1,10 @@
 import { EpisodeCard } from '@/components/episode-card';
 import db from '@/db';
-import { episodesTable, podcastsTable } from '@/db/schema';
+import {
+  episodeDownloadsTable,
+  episodesTable,
+  podcastsTable,
+} from '@/db/schema';
 import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
 import { desc, eq } from 'drizzle-orm';
 import React, { useState } from 'react';
@@ -21,6 +25,10 @@ export default function Inbox() {
       .orderBy(desc(episodesTable.pubDateTimestamp))
       .limit(100)
       .leftJoin(podcastsTable, eq(episodesTable.podcastId, podcastsTable.id))
+      .leftJoin(
+        episodeDownloadsTable,
+        eq(episodesTable.id, episodeDownloadsTable.episodeId)
+      )
   );
 
   if (episodeError) {
@@ -54,9 +62,13 @@ export default function Inbox() {
       <FlatList
         style={{ paddingHorizontal: 16 }}
         data={episodes}
-        // TODO: add the item
         renderItem={({ item }) => (
-          <EpisodeCard episode={item.episodes} onPress={() => {}} />
+          <EpisodeCard
+            key={item.episodes.id.toString()}
+            episode={item.episodes}
+            onPress={() => {}}
+            downloadStatus={item.episode_downloads?.status}
+          />
         )}
         keyExtractor={(item) => item.episodes.id.toString()}
         ItemSeparatorComponent={() => (
