@@ -38,7 +38,7 @@ export function PodcastActionsSheet({
       animation='quicksnap'
     >
       <Sheet.Overlay
-        backgroundColor='$shadow6'
+        // backgroundColor='$shadow6'
         animation='quick'
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
