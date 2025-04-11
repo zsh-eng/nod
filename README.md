@@ -68,3 +68,14 @@ export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$
 Run the build using `npx expo run:android`.
 
 NOTE: Only tried running the build for Android so far, I believe there are different instructions for the various modules (like Filesystem, Track Player) to setup for iOS.
+
+NOTE: Avoid using Android emulator on laptop – it's really slow 
+compared to testing on a real device.
+
+### Building Application for Usage
+
+Install `eas-cli` globally and login with `eas login`.
+
+```shell
+eas build --platform android --profile development --local
+```
