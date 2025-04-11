@@ -1,23 +1,9 @@
 import { DownloadState } from '@/contexts/download-context';
+import { formatStatusText } from '@/lib/utils';
 import { deleteDownload } from '@/service/episode/download';
 import { isInProgressDownload } from '@/types/episode';
 import { Play, Trash } from '@tamagui/lucide-icons';
 import { Button, Progress, Text, XStack, YStack } from 'tamagui';
-
-function formatStatusText(status: string) {
-  switch (status) {
-    case 'completed':
-      return 'completed';
-    case 'in_progress':
-      return 'downloading';
-    case 'not_started':
-      return 'not started';
-    case 'paused':
-      return 'paused';
-    default:
-      return status;
-  }
-}
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-US', {
