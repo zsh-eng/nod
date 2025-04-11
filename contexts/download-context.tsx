@@ -1,3 +1,4 @@
+import db from '@/db';
 import {
   constructDownloadFilename,
   createDownloadState,
@@ -12,6 +13,7 @@ import {
   isInProgressDownload,
   PausedDownload,
 } from '@/types/episode';
+import { eq } from 'drizzle-orm';
 import * as FileSystem from 'expo-file-system';
 import { type DownloadProgressData, DownloadResumable } from 'expo-file-system';
 import React, {
@@ -23,8 +25,6 @@ import React, {
   useState,
 } from 'react';
 import { Episode, episodeDownloadsTable } from '../db/schema';
-import db from '@/db';
-import { eq } from 'drizzle-orm';
 
 export interface DownloadState {
   episode: Episode;
@@ -43,6 +43,20 @@ const DownloadContext = createContext<DownloadContextType | null>(null);
 
 const EPISODE_DOWNLOADS_DIR =
   FileSystem.documentDirectory + 'episode-downloads/';
+
+function throttle<T extends (...args: any[]) => void>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let lastCall = 0;
+  return (...args: Parameters<T>) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    }
+  };
+}
 
 export function DownloadProvider({ children }: { children: React.ReactNode }) {
   const [activeDownloads, setActiveDownloads] = useState<
@@ -67,6 +81,39 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
    * of -> pause -> progress update)
    */
   const buildDownloadCallback = useCallback((episodeId: number) => {
+    // We want to make sure that regular progress updates are throttled
+    // but not the final update that marks the download as completed
+    const throttledProgressUpdate = throttle(
+      (progress: DownloadProgressData) => {
+        // Handle regular progress updates
+        if (!activeDownloadsRef.current) {
+          return;
+        }
+
+        const downloadState = activeDownloadsRef.current[episodeId];
+        if (
+          !downloadState ||
+          !isInProgressDownload(downloadState.download) ||
+          !downloadState.resumable
+        ) {
+          return;
+        }
+
+        setActiveDownloads((prev) => ({
+          ...prev,
+          [episodeId]: {
+            ...prev[episodeId],
+            download: {
+              ...downloadState.download,
+              currentBytes: progress.totalBytesWritten,
+              totalBytes: progress.totalBytesExpectedToWrite,
+            } as InProgressDownload,
+          },
+        }));
+      },
+      500
+    );
+
     return (progress: DownloadProgressData) => {
       if (!activeDownloadsRef.current) {
         console.log('No active downloads, skipping progress update');
@@ -95,45 +142,30 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
       const isCompleted =
         progress.totalBytesWritten === progress.totalBytesExpectedToWrite;
 
-      const nextDownloadState = isCompleted
-        ? ({
-            ...downloadState.download,
-            status: 'completed',
-            totalBytes: progress.totalBytesExpectedToWrite,
-          } as CompletedDownload)
-        : ({
-            ...downloadState.download,
-            currentBytes: progress.totalBytesWritten,
-            totalBytes: progress.totalBytesExpectedToWrite,
-          } as InProgressDownload);
-
       if (isCompleted) {
+        // Handle completion immediately without throttling
+        const nextDownloadState = {
+          ...downloadState.download,
+          status: 'completed',
+          totalBytes: progress.totalBytesExpectedToWrite,
+        } as CompletedDownload;
+
         console.log('Download completed for episode:', episodeId);
+
+        setActiveDownloads((prev) => {
+          const { [episodeId]: _, ...rest } = prev;
+          return rest;
+        });
+        updateDownloadState(nextDownloadState);
       } else {
+        // Use throttled handler for progress updates
         console.log(
           'Updating progress for episode:',
           episodeId,
           `(${progress.totalBytesWritten} / ${progress.totalBytesExpectedToWrite})`
         );
+        throttledProgressUpdate(progress);
       }
-
-      if (isCompleted) {
-        setActiveDownloads((prev) => {
-          const { [episodeId]: _, ...rest } = prev;
-          return rest;
-        });
-      } else {
-        setActiveDownloads((prev) => {
-          return {
-            ...prev,
-            [episodeId]: {
-              ...prev[episodeId],
-              download: nextDownloadState,
-            },
-          };
-        });
-      }
-      updateDownloadState(nextDownloadState);
     };
   }, []);
 
@@ -146,7 +178,6 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
           error: EPISODE_HAS_NO_DOWNLOAD_URL_ERROR,
         };
       }
-
 
       try {
         // Check if URL is valid and accessible
