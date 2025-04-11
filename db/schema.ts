@@ -124,6 +124,10 @@ export const episodePodcastRelations = relations(episodesTable, ({ one }) => ({
     fields: [episodesTable.podcastId],
     references: [podcastsTable.id],
   }),
+  episodeDownloads: one(episodeDownloadsTable, {
+    fields: [episodesTable.id],
+    references: [episodeDownloadsTable.episodeId],
+  }),
 }));
 
 export const episodeDownloadRelations = relations(
