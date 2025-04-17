@@ -79,3 +79,9 @@ Install `eas-cli` globally and login with `eas login`.
 ```shell
 eas build --platform android --profile development --local
 ```
+
+### Preview Build
+
+```shell
+eas build --platform android --profile development --local
+```
