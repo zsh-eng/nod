@@ -3,7 +3,7 @@ import db from '@/db';
 import { Episode, episodesTable, podcastsTable } from '@/db/schema';
 import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
 import { updatePodcastFeed } from '@/service/podcast';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { PodcastEpisodeListView } from './podcast-episode-list-view';
 
 interface PodcastEpisodeListProps {
@@ -28,6 +28,7 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
   } = useSQLiteQuery(() =>
     db.query.episodesTable.findMany({
       where: eq(episodesTable.podcastId, podcastId),
+      orderBy: desc(episodesTable.pubDateTimestamp),
       limit: 100,
       with: {
         episodeDownloads: true,
