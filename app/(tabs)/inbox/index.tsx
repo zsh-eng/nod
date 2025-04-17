@@ -55,7 +55,7 @@ export default function Inbox() {
 
   return (
     <YStack gap='$2' paddingBottom='$10' backgroundColor={'$background'}>
-      <YStack gap='$4' padding='$4' paddingVertical={'$6'}>
+      <YStack gap='$4' padding='$4' paddingTop={'$6'}>
         <H2 fontWeight={'bold'}>Inbox</H2>
       </YStack>
 
