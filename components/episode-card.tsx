@@ -1,6 +1,7 @@
 import { Episode } from '@/db/schema';
 import { formatStatusText, stripHtml } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useState } from 'react';
 import { Card, Text, XStack, YStack } from 'tamagui';
 
 function formatDuration(duration: number | null) {
@@ -31,8 +32,33 @@ export function EpisodeCard({
   downloadStatus?: 'not_started' | 'in_progress' | 'paused' | 'completed';
   onPress: () => void;
 }) {
+  const [isOptimisticallyPending, setIsOptimisticallyPending] = useState(false);
+
+  const isNotStartedOrNotDefined =
+    !downloadStatus || downloadStatus === 'not_started';
+
+  useEffect(() => {
+    if (!isNotStartedOrNotDefined) {
+      setIsOptimisticallyPending(false);
+    }
+  }, [downloadStatus, isNotStartedOrNotDefined]);
+
+  const handlePress = () => {
+    if (isNotStartedOrNotDefined) {
+      console.log('Starting download, updating UI optimistically');
+      setIsOptimisticallyPending(true);
+    }
+    onPress();
+  };
+
+  // Determine the status to display
+  const displayStatus =
+    isOptimisticallyPending && isNotStartedOrNotDefined
+      ? 'pending'
+      : downloadStatus;
+
   return (
-    <Card onPress={onPress}>
+    <Card onPress={handlePress}>
       <YStack padding='' gap='$2'>
         <XStack justifyContent='flex-start' gap='$2' alignItems='center'>
           <Text color='gray' fontSize='$2' textTransform='uppercase'>
@@ -44,14 +70,14 @@ export function EpisodeCard({
           <Text color='gray' fontSize='$2'>
             {formatDuration(episode.itunesDuration)}
           </Text>
-          {downloadStatus && (
+          {displayStatus && (
             <Text
               fontSize='$2'
               color={'gray'}
               marginLeft={'auto'}
               textTransform='uppercase'
             >
-              {formatStatusText(downloadStatus)}
+              {formatStatusText(displayStatus)}
             </Text>
           )}
         </XStack>
