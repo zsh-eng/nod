@@ -7,7 +7,7 @@ import {
   Podcast,
   podcastsTable,
 } from '../db/schema';
-import { PodcastFeed } from '../lib/parser';
+import { parsePodcastFeed, PodcastFeed } from '../lib/parser';
 
 const BATCH_SIZE = 100;
 
@@ -172,6 +172,28 @@ export async function deletePodcast(id: number) {
     await tx.delete(podcastsTable).where(eq(podcastsTable.id, id));
     console.log('deleted podcast', id);
   });
+}
+
+export async function updatePodcastFeed(id: number) {
+  const existingPodcast = await getPodcast(id);
+  if (!existingPodcast) {
+    console.log('podcast not found', id);
+    return;
+  }
+
+  const parsedPodcast = await parsePodcastFeed(existingPodcast.feedUrl);
+
+  await Promise.all([
+    db
+      .update(podcastsTable)
+      .set({
+        nodDateUpdated: new Date(),
+      })
+      .where(eq(podcastsTable.id, id)),
+    addEpisodes(parsedPodcast, existingPodcast),
+  ]);
+
+  return;
 }
 
 // Episode CRUD operations

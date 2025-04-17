@@ -2,6 +2,7 @@ import { useDownloads } from '@/contexts/download-context';
 import db from '@/db';
 import { Episode, episodesTable, podcastsTable } from '@/db/schema';
 import { useSQLiteQuery } from '@/hooks/use-sqlite-query';
+import { updatePodcastFeed } from '@/service/podcast';
 import { eq } from 'drizzle-orm';
 import { PodcastEpisodeListView } from './podcast-episode-list-view';
 
@@ -20,7 +21,11 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
     })
   );
 
-  const { data: episodes, loading: episodesLoading } = useSQLiteQuery(() =>
+  const {
+    data: episodes,
+    loading: episodesLoading,
+    refetch: refetchEpisodes,
+  } = useSQLiteQuery(() =>
     db.query.episodesTable.findMany({
       where: eq(episodesTable.podcastId, podcastId),
       limit: 100,
@@ -32,6 +37,12 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
 
   const { startDownload } = useDownloads();
 
+  const handleRefreshEpisodes = async () => {
+    await updatePodcastFeed(podcastId);
+    await refetchEpisodes();
+    return;
+  };
+
   const handleEpisodePress = (episode: Episode) => {
     startDownload(episode);
   };
@@ -42,6 +53,7 @@ export function PodcastEpisodeList({ podcastId }: PodcastEpisodeListProps) {
       episodes={episodes}
       podcastError={podcastError}
       onEpisodePress={handleEpisodePress}
+      onRefresh={handleRefreshEpisodes}
     />
   );
 }

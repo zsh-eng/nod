@@ -13,7 +13,11 @@ export default function PodcastPage() {
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false);
 
   const memoizedPodcastList = useMemo(() => {
-    return <PodcastEpisodeList podcastId={podcastId} />;
+    return (
+      <PodcastEpisodeList
+        podcastId={podcastId}
+      />
+    );
   }, [podcastId]);
 
   return (

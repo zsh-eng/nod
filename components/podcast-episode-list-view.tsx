@@ -4,7 +4,8 @@ import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { FlatList } from 'react-native';
+import { useState } from 'react';
+import { FlatList, RefreshControl } from 'react-native';
 import {
   Button,
   H2,
@@ -25,6 +26,8 @@ interface PodcastEpisodeListViewProps {
     | null;
   podcastError?: unknown;
   onEpisodePress: (episode: Episode) => void;
+  /** Handles the refresh action */
+  onRefresh: () => Promise<void>;
 }
 
 export function PodcastEpisodeListView({
@@ -32,8 +35,16 @@ export function PodcastEpisodeListView({
   episodes,
   podcastError,
   onEpisodePress,
+  onRefresh,
 }: PodcastEpisodeListViewProps) {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
+  };
 
   if (podcastError) {
     return (
@@ -127,6 +138,9 @@ export function PodcastEpisodeListView({
       )}
       ListHeaderComponent={getHeader}
       ListFooterComponent={() => <View height={32} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
     />
   );
 }
