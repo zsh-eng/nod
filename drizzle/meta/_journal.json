@@ -22,6 +22,13 @@
       "when": 1744342700794,
       "tag": "0002_closed_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1744856834982,
+      "tag": "0003_spicy_phalanx",
+      "breakpoints": true
     }
   ]
 }

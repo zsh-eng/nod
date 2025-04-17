@@ -5,6 +5,7 @@ import {
   real,
   sqliteTable,
   text,
+  uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
 export const podcastsTable = sqliteTable(
@@ -89,6 +90,11 @@ export const episodesTable = sqliteTable(
     // currently the order is ok
     pubDateTimestampIndex: index('pub_date_timestamp').on(
       episodesTable.pubDateTimestamp
+    ),
+    // combination of podcastId and guid should be unique
+    uniqueGuidIndex: uniqueIndex('unique_guid').on(
+      episodesTable.podcastId,
+      episodesTable.guid
     ),
   })
 );
