@@ -4,7 +4,7 @@ import { stripHtml } from '@/lib/utils';
 import { ArrowLeft, X } from '@tamagui/lucide-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import {
   Button,
@@ -46,32 +46,11 @@ export function PodcastEpisodeListView({
     setRefreshing(false);
   };
 
-  if (podcastError) {
-    return (
-      <YStack
-        flex={1}
-        justifyContent='center'
-        alignItems='center'
-        padding='$4'
-        gap='$4'
-      >
-        <X size={48} color='gray' />
-        <H2>Podcast not found</H2>
-        <Paragraph textAlign='center' color='gray'>
-          The podcast you're looking for doesn't exist or has been removed.
-        </Paragraph>
-        <Button icon={ArrowLeft} onPress={() => router.back()} theme='active'>
-          Go Back
-        </Button>
-      </YStack>
-    );
-  }
+  const getHeader = useMemo(() => {
+    if (!podcast) {
+      return null;
+    }
 
-  if (!podcast) {
-    return null;
-  }
-
-  const getHeader = () => {
     return (
       <YStack gap='$4' backgroundColor=''>
         {podcast.imageUrl && (
@@ -115,7 +94,32 @@ export function PodcastEpisodeListView({
         </YStack>
       </YStack>
     );
-  };
+  }, [podcast?.id]);
+
+  if (podcastError) {
+    return (
+      <YStack
+        flex={1}
+        justifyContent='center'
+        alignItems='center'
+        padding='$4'
+        gap='$4'
+      >
+        <X size={48} color='gray' />
+        <H2>Podcast not found</H2>
+        <Paragraph textAlign='center' color='gray'>
+          The podcast you're looking for doesn't exist or has been removed.
+        </Paragraph>
+        <Button icon={ArrowLeft} onPress={() => router.back()} theme='active'>
+          Go Back
+        </Button>
+      </YStack>
+    );
+  }
+
+  if (!podcast) {
+    return null;
+  }
 
   return (
     <FlatList
