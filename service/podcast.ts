@@ -4,11 +4,63 @@ import db from '../db';
 import {
   episodeDownloadsTable,
   episodesTable,
+  Podcast,
   podcastsTable,
 } from '../db/schema';
 import { PodcastFeed } from '../lib/parser';
 
 const BATCH_SIZE = 100;
+
+/**
+ * Adds episodes for a given podcast.
+ * On conflict for (guid, podcastid), does nothing.
+ */
+async function addEpisodes(feed: PodcastFeed, podcast: Podcast) {
+  console.log('adding episodes for podcast', podcast.id);
+  // Create episodes
+  const episodeValues = feed.episodes.map((episode) => ({
+    podcastId: podcast.id,
+    author: episode.author,
+    contentEncoded: episode.contentEncoded,
+    description: episode.description,
+    enclosureUrl: episode.enclosure?.url,
+    enclosureType: episode.enclosure?.type,
+    guid: episode.guid,
+    itunesAuthor: episode.itunesAuthor,
+    itunesDuration: episode.itunesDuration,
+    itunesEpisode: episode.itunesEpisode,
+    itunesEpisodeType: episode.itunesEpisodeType,
+    itunesExplicit: episode.itunesExplicit,
+    itunesImage: episode.itunesImage,
+    itunesSeason: episode.itunesSeason,
+    itunesSubtitle: episode.itunesSubtitle,
+    itunesSummary: episode.itunesSummary,
+    itunesTitle: episode.itunesTitle,
+    link: episode.link,
+    pubDate: episode.pubDate,
+    pubDateTimestamp: new Date(episode.pubDate),
+    title: episode.title,
+  }));
+
+  const batches = [];
+  for (let i = 0; i < episodeValues.length; i += BATCH_SIZE) {
+    batches.push(episodeValues.slice(i, i + BATCH_SIZE));
+  }
+
+  console.log(
+    'starting iteration over',
+    batches.length,
+    'batches',
+    'for podcast',
+    podcast.id
+  );
+  for (const batch of batches) {
+    console.log('inserting batch of', batch.length, 'episodes');
+    await db.insert(episodesTable).values(batch).onConflictDoNothing();
+    console.log('inserted batch of', batch.length, 'episodes');
+  }
+  console.log('finished inserting episodes for podcast', podcast.id);
+}
 
 export async function createPodcast(feed: PodcastFeed) {
   console.log('creating podcast', feed.podcast.title);
@@ -42,50 +94,7 @@ export async function createPodcast(feed: PodcastFeed) {
     .returning();
   console.log('created podcast', newPodcast.id);
 
-  // Create episodes
-  const episodeValues = feed.episodes.map((episode) => ({
-    podcastId: newPodcast.id,
-    author: episode.author,
-    contentEncoded: episode.contentEncoded,
-    description: episode.description,
-    enclosureUrl: episode.enclosure?.url,
-    enclosureType: episode.enclosure?.type,
-    guid: episode.guid,
-    itunesAuthor: episode.itunesAuthor,
-    itunesDuration: episode.itunesDuration,
-    itunesEpisode: episode.itunesEpisode,
-    itunesEpisodeType: episode.itunesEpisodeType,
-    itunesExplicit: episode.itunesExplicit,
-    itunesImage: episode.itunesImage,
-    itunesSeason: episode.itunesSeason,
-    itunesSubtitle: episode.itunesSubtitle,
-    itunesSummary: episode.itunesSummary,
-    itunesTitle: episode.itunesTitle,
-    link: episode.link,
-    pubDate: episode.pubDate,
-    pubDateTimestamp: new Date(episode.pubDate),
-    title: episode.title,
-  }));
-
-  const batches = [];
-  for (let i = 0; i < episodeValues.length; i += BATCH_SIZE) {
-    batches.push(episodeValues.slice(i, i + BATCH_SIZE));
-  }
-
-  console.log(
-    'starting iteration over',
-    batches.length,
-    'batches',
-    'for podcast',
-    newPodcast.id
-  );
-  for (const batch of batches) {
-    console.log('inserting batch of', batch.length, 'episodes');
-    await db.insert(episodesTable).values(batch);
-    console.log('inserted batch of', batch.length, 'episodes');
-  }
-  console.log('finished inserting episodes for podcast', newPodcast.id);
-
+  await addEpisodes(feed, newPodcast);
   return newPodcast;
 }
 
