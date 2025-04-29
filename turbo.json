@@ -1,9 +1,15 @@
 {
-  "$schema": "https://turborepo.org/schema.json",
+  "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "lint": { "outputs": [] },
-    "test": { "dependsOn": ["^build"], "outputs": [] },
-    "build": { "outputs": ["dist/**"] },
-    "dev": { "cache": false }
+    "build": {
+      "outputs": ["dist/**"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    }
   }
 }
